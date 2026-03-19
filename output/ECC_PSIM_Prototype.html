@@ -2124,20 +2124,39 @@ label { cursor: pointer; }
         </div>
       </div>
       <div class="sidebar-content" style="padding:8px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
           <span style="font-size:11px;color:var(--text-muted);font-weight:600;">GRID:</span>
           <label for="grid-2x2" class="btn-action ghost grid-sel-label">2x2</label>
           <label for="grid-2x3" class="btn-action ghost grid-sel-label">2x3</label>
           <label for="grid-3x3" class="btn-action ghost grid-sel-label">3x3</label>
           <label for="grid-4x4" class="btn-action ghost grid-sel-label">4x4</label>
+          <div style="width:1px;height:16px;background:var(--border);margin:0 4px;"></div>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600;">ZONE:</span>
+          <button class="btn-action primary zone-filter-btn" data-zone="all" onclick="filterCameraZone('all')">All</button>
+          <button class="btn-action ghost zone-filter-btn" data-zone="ed" onclick="filterCameraZone('ed')">ED</button>
+          <button class="btn-action ghost zone-filter-btn" data-zone="theatre" onclick="filterCameraZone('theatre')">Theatre</button>
+          <button class="btn-action ghost zone-filter-btn" data-zone="wards" onclick="filterCameraZone('wards')">Wards</button>
+          <button class="btn-action ghost zone-filter-btn" data-zone="carpark" onclick="filterCameraZone('carpark')">Car Park</button>
+          <button class="btn-action ghost zone-filter-btn" data-zone="external" onclick="filterCameraZone('external')">External</button>
+          <span id="liveViewCount" style="font-size:10px;color:var(--text-muted);margin-left:auto;">Showing 16 cameras</span>
         </div>
         <div class="camera-grid" id="liveViewGrid">
-          <div class="camera-tile cam-gradient-1"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
-          <div class="camera-tile cam-gradient-2"><div class="cam-label">CAM-0102 ED Corridor</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
-          <div class="camera-tile cam-gradient-3"><div class="cam-label">CAM-0115 ED L2 Nurses</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
-          <div class="camera-tile cam-gradient-4"><div class="cam-label">CAM-0132 Ward 4B</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC SAN | 2026-03-19 08:42</div></div>
-          <div class="camera-tile cam-gradient-5"><div class="cam-label">CAM-0155 Loading Dock</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
-          <div class="camera-tile cam-gradient-6" style="position:relative;"><div class="cam-label">CAM-0142 Car Park B</div><div class="cam-status" style="background:var(--offline);"></div><div class="cam-osd" style="color:var(--critical);">OFFLINE — No Signal</div><div style="color:var(--critical);font-size:20px;">&#9888;</div></div>
+          <div class="camera-tile cam-gradient-1" data-zone="ed"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-2" data-zone="ed"><div class="cam-label">CAM-0102 ED Corridor</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-3" data-zone="ed"><div class="cam-label">CAM-0103 ED Waiting</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-4" data-zone="ed"><div class="cam-label">CAM-0104 ED Triage</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-5" data-zone="ed"><div class="cam-label">CAM-0115 ED L2 Nurses</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-6" data-zone="theatre"><div class="cam-label">CAM-0120 Theatre Lobby</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-1" data-zone="theatre"><div class="cam-label">CAM-0121 Theatre Corridor</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-2" data-zone="wards"><div class="cam-label">CAM-0130 Ward 4A Entry</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC SAN | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-3" data-zone="wards"><div class="cam-label">CAM-0131 Ward 4A Corr</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC SAN | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-4" data-zone="wards"><div class="cam-label">CAM-0132 Ward 4B</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC SAN | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-5" data-zone="carpark"><div class="cam-label">CAM-0140 Car Park A Entry</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-6" data-zone="carpark"><div class="cam-label">CAM-0141 Car Park A Exit</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-1" data-zone="carpark" style="position:relative;"><div class="cam-label">CAM-0142 Car Park B</div><div class="cam-status" style="background:var(--offline);"></div><div class="cam-osd" style="color:var(--critical);">OFFLINE — No Signal</div><div style="color:var(--critical);font-size:20px;">&#9888;</div></div>
+          <div class="camera-tile cam-gradient-2" data-zone="external"><div class="cam-label">CAM-0155 Loading Dock</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-3" data-zone="external"><div class="cam-label">CAM-0156 Stanley St Gate</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-4" data-zone="external"><div class="cam-label">CAM-0170 Helipad</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
         </div>
       </div>
     </div>
@@ -3083,6 +3102,29 @@ function closeQuickModal() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeQuickModal();
 });
+
+/* Live View zone filtering */
+function filterCameraZone(zone) {
+  var tiles = document.querySelectorAll('#liveViewGrid .camera-tile');
+  var visible = 0;
+  for (var i = 0; i < tiles.length; i++) {
+    if (zone === 'all' || tiles[i].getAttribute('data-zone') === zone) {
+      tiles[i].style.display = '';
+      visible++;
+    } else {
+      tiles[i].style.display = 'none';
+    }
+  }
+  document.getElementById('liveViewCount').textContent = 'Showing ' + visible + ' camera' + (visible !== 1 ? 's' : '');
+  var btns = document.querySelectorAll('.zone-filter-btn');
+  for (var j = 0; j < btns.length; j++) {
+    if (btns[j].getAttribute('data-zone') === zone) {
+      btns[j].className = 'btn-action primary zone-filter-btn';
+    } else {
+      btns[j].className = 'btn-action ghost zone-filter-btn';
+    }
+  }
+}
 </script>
 </body>
 </html>
