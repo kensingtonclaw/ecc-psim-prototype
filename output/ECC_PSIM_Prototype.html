@@ -295,6 +295,14 @@ body {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
 
+/* Hide device markers when filter is unchecked */
+#filter-cctv:not(:checked) ~ .main-content > #s1-panel .device-marker.camera { display: none; }
+#filter-eacs:not(:checked) ~ .main-content > #s1-panel .device-marker.door { display: none; }
+#filter-ics:not(:checked) ~ .main-content > #s1-panel .device-marker.intercom { display: none; }
+#filter-iaz:not(:checked) ~ .main-content > #s1-panel .device-marker.iaz { display: none; }
+#filter-fas:not(:checked) ~ .main-content > #s1-panel .device-marker.fire { display: none; }
+#filter-duress:not(:checked) ~ .main-content > #s1-panel .device-marker.duress { display: none; }
+
 /* Floor selector switching */
 .floor-plan-l1, .floor-plan-l2 { display: none; }
 #floor-1:checked ~ .main-content > #s1-panel .floor-plan-l1 { display: block; }
