@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everbridge Control Center — ESS PSIM</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #1a1d23;
+  color: #c8cdd5;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== VARIABLES ===== */
+:root {
+  --bg-primary: #1a1d23;
+  --bg-panel: #22262e;
+  --bg-panel-alt: #272b35;
+  --bg-input: #2d3240;
+  --border: #2d3240;
+  --border-light: #3a3f4e;
+  --text-primary: #e0e4ea;
+  --text-secondary: #8b92a0;
+  --text-muted: #5a6170;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --critical: #ff3b3b;
+  --critical-bg: rgba(255,59,59,0.12);
+  --critical-border: rgba(255,59,59,0.3);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245,158,11,0.12);
+  --warning-border: rgba(245,158,11,0.3);
+  --success: #10b981;
+  --success-bg: rgba(16,185,129,0.12);
+  --degraded: #f59e0b;
+  --online: #10b981;
+  --offline: #ff3b3b;
+}
+
+/* ===== SCROLLBARS ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4a5060; }
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #1e2230, #1a1d23);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 44px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-brand .logo {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px; color: #fff;
+}
+.header-brand h1 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.header-brand .subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-clock {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.header-date { font-size: 11px; color: var(--text-secondary); }
+.header-operator {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 10px;
+  background: var(--bg-panel);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.operator-avatar {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff; font-weight: 700;
+}
+.operator-name { font-size: 12px; color: var(--text-primary); }
+.operator-role { font-size: 10px; color: var(--text-muted); }
+.btn-info {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-info:hover { background: var(--border-light); color: var(--text-primary); }
+
+/* ===== SCREEN NAV ===== */
+.screen-nav {
+  display: flex;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  height: 38px;
+}
+.screen-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.screen-tab:hover { color: var(--text-primary); background: rgba(59,130,246,0.05); }
+.screen-tab .tab-icon { font-size: 14px; }
+.screen-tab .alarm-badge {
+  background: var(--critical);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+  animation: pulse-badge 2s infinite;
+}
+@keyframes pulse-badge { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.screen-panel {
+  display: none;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+/* ===== CSS-ONLY NAVIGATION ===== */
+
+/* Screen switching */
+#screen-1:checked ~ .main-content > #s1-panel { display: flex; }
+#screen-2:checked ~ .main-content > #s2-panel { display: flex; }
+#screen-3:checked ~ .main-content > #s3-panel { display: flex; }
+#screen-4:checked ~ .main-content > #s4-panel { display: flex; }
+
+/* Screen tab highlighting */
+#screen-1:checked ~ .screen-nav > label[for="screen-1"],
+#screen-2:checked ~ .screen-nav > label[for="screen-2"],
+#screen-3:checked ~ .screen-nav > label[for="screen-3"],
+#screen-4:checked ~ .screen-nav > label[for="screen-4"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: rgba(59,130,246,0.08);
+}
+
+/* Sub-tab content switching — Screen 1 */
+#s1-tab-0:checked ~ .main-content > #s1-panel #s1-content-0,
+#s1-tab-1:checked ~ .main-content > #s1-panel #s1-content-1,
+#s1-tab-2:checked ~ .main-content > #s1-panel #s1-content-2,
+#s1-tab-3:checked ~ .main-content > #s1-panel #s1-content-3 { display: flex; flex-direction: column; }
+
+/* Sub-tab label highlighting — Screen 1 */
+#s1-tab-0:checked ~ .main-content > #s1-panel label[for="s1-tab-0"],
+#s1-tab-1:checked ~ .main-content > #s1-panel label[for="s1-tab-1"],
+#s1-tab-2:checked ~ .main-content > #s1-panel label[for="s1-tab-2"],
+#s1-tab-3:checked ~ .main-content > #s1-panel label[for="s1-tab-3"] {
+  color: var(--accent); border-bottom-color: var(--accent);
+}
+
+/* Sub-tab content switching — Screen 2 */
+#s2-tab-0:checked ~ .main-content > #s2-panel #s2-content-0,
+#s2-tab-1:checked ~ .main-content > #s2-panel #s2-content-1,
+#s2-tab-2:checked ~ .main-content > #s2-panel #s2-content-2,
+#s2-tab-3:checked ~ .main-content > #s2-panel #s2-content-3 { display: flex; flex-direction: column; }
+
+#s2-tab-0:checked ~ .main-content > #s2-panel label[for="s2-tab-0"],
+#s2-tab-1:checked ~ .main-content > #s2-panel label[for="s2-tab-1"],
+#s2-tab-2:checked ~ .main-content > #s2-panel label[for="s2-tab-2"],
+#s2-tab-3:checked ~ .main-content > #s2-panel label[for="s2-tab-3"] {
+  color: var(--accent); border-bottom-color: var(--accent);
+}
+
+/* Sub-tab content switching — Screen 3 */
+#s3-tab-0:checked ~ .main-content > #s3-panel #s3-content-0,
+#s3-tab-1:checked ~ .main-content > #s3-panel #s3-content-1,
+#s3-tab-2:checked ~ .main-content > #s3-panel #s3-content-2,
+#s3-tab-3:checked ~ .main-content > #s3-panel #s3-content-3,
+#s3-tab-4:checked ~ .main-content > #s3-panel #s3-content-4,
+#s3-tab-5:checked ~ .main-content > #s3-panel #s3-content-5 { display: flex; flex-direction: column; }
+
+#s3-tab-0:checked ~ .main-content > #s3-panel label[for="s3-tab-0"],
+#s3-tab-1:checked ~ .main-content > #s3-panel label[for="s3-tab-1"],
+#s3-tab-2:checked ~ .main-content > #s3-panel label[for="s3-tab-2"],
+#s3-tab-3:checked ~ .main-content > #s3-panel label[for="s3-tab-3"],
+#s3-tab-4:checked ~ .main-content > #s3-panel label[for="s3-tab-4"],
+#s3-tab-5:checked ~ .main-content > #s3-panel label[for="s3-tab-5"] {
+  color: var(--accent); border-bottom-color: var(--accent);
+}
+
+/* Sub-tab content switching — Screen 4 */
+#s4-tab-0:checked ~ .main-content > #s4-panel #s4-content-0,
+#s4-tab-1:checked ~ .main-content > #s4-panel #s4-content-1,
+#s4-tab-2:checked ~ .main-content > #s4-panel #s4-content-2,
+#s4-tab-3:checked ~ .main-content > #s4-panel #s4-content-3,
+#s4-tab-4:checked ~ .main-content > #s4-panel #s4-content-4,
+#s4-tab-5:checked ~ .main-content > #s4-panel #s4-content-5 { display: flex; flex-direction: column; }
+
+#s4-tab-0:checked ~ .main-content > #s4-panel label[for="s4-tab-0"],
+#s4-tab-1:checked ~ .main-content > #s4-panel label[for="s4-tab-1"],
+#s4-tab-2:checked ~ .main-content > #s4-panel label[for="s4-tab-2"],
+#s4-tab-3:checked ~ .main-content > #s4-panel label[for="s4-tab-3"],
+#s4-tab-4:checked ~ .main-content > #s4-panel label[for="s4-tab-4"],
+#s4-tab-5:checked ~ .main-content > #s4-panel label[for="s4-tab-5"] {
+  color: var(--accent); border-bottom-color: var(--accent);
+}
+
+/* Overlay toggles */
+.overlay-backdrop { display: none; }
+#alarm-popup-toggle:checked ~ .main-content ~ #alarmPopup,
+#alarm-popup-toggle:checked ~ #alarmPopup { display: flex; }
+#info-panel-toggle:checked ~ .main-content ~ #infoPanel,
+#info-panel-toggle:checked ~ #infoPanel { display: flex; }
+
+/* Grid selector */
+#grid-2x2:checked ~ .main-content > #s3-panel #liveViewGrid { grid-template-columns: repeat(2, 1fr); }
+#grid-2x3:checked ~ .main-content > #s3-panel #liveViewGrid { grid-template-columns: repeat(3, 1fr); }
+#grid-3x3:checked ~ .main-content > #s3-panel #liveViewGrid { grid-template-columns: repeat(3, 1fr); }
+#grid-4x4:checked ~ .main-content > #s3-panel #liveViewGrid { grid-template-columns: repeat(4, 1fr); }
+
+/* Grid button highlighting */
+.grid-sel-label { cursor: pointer; }
+#grid-2x2:checked ~ .main-content > #s3-panel label[for="grid-2x2"],
+#grid-2x3:checked ~ .main-content > #s3-panel label[for="grid-2x3"],
+#grid-3x3:checked ~ .main-content > #s3-panel label[for="grid-3x3"],
+#grid-4x4:checked ~ .main-content > #s3-panel label[for="grid-4x4"] {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* Filter chip toggle via checkboxes */
+.filter-chip-label { cursor: pointer; }
+#filter-cctv:checked ~ .main-content > #s1-panel label[for="filter-cctv"],
+#filter-eacs:checked ~ .main-content > #s1-panel label[for="filter-eacs"],
+#filter-ics:checked ~ .main-content > #s1-panel label[for="filter-ics"],
+#filter-iaz:checked ~ .main-content > #s1-panel label[for="filter-iaz"],
+#filter-fas:checked ~ .main-content > #s1-panel label[for="filter-fas"],
+#filter-duress:checked ~ .main-content > #s1-panel label[for="filter-duress"],
+#filter-critical:checked ~ .main-content > #s2-panel label[for="filter-critical"],
+#filter-lowpri:checked ~ .main-content > #s2-panel label[for="filter-lowpri"] {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* ===== SUB-TABS ===== */
+.sub-tabs {
+  display: flex;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  height: 34px;
+}
+.sub-tab {
+  padding: 0 16px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+}
+.sub-tab:hover { color: var(--text-primary); }
+
+.sub-content {
+  display: none;
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* ===== PANELS & CARDS ===== */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+}
+.panel-header.critical { color: var(--critical); border-left: 3px solid var(--critical); }
+.panel-header.warning { color: var(--warning); border-left: 3px solid var(--warning); }
+.panel-body { padding: 10px; }
+
+/* ===== ALARM GRID ===== */
+.alarm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.alarm-table thead th {
+  background: var(--bg-panel-alt);
+  color: var(--text-secondary);
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.alarm-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.alarm-table tbody tr.critical-row {
+  background: var(--critical-bg);
+  border-left: 3px solid var(--critical);
+}
+.alarm-table tbody tr.critical-row:hover { background: rgba(255,59,59,0.18); }
+.alarm-table tbody tr.warning-row {
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning);
+}
+.alarm-table tbody tr.warning-row:hover { background: rgba(245,158,11,0.18); }
+.alarm-table tbody tr:hover { cursor: pointer; }
+
+/* Flashing for unacknowledged */
+@keyframes flash-critical {
+  0%, 100% { background: var(--critical-bg); }
+  50% { background: rgba(255,59,59,0.25); }
+}
+.alarm-table tbody tr.unacked { animation: flash-critical 1.5s infinite; }
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.status-new { background: var(--critical); color: #fff; }
+.status-ack { background: var(--warning); color: #1a1d23; }
+.status-resolved { background: var(--success); color: #fff; }
+
+.btn-action {
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-action.primary { background: var(--accent); color: #fff; }
+.btn-action.primary:hover { background: var(--accent-hover); }
+.btn-action.danger { background: var(--critical); color: #fff; }
+.btn-action.danger:hover { background: #e02020; }
+.btn-action.warning { background: var(--warning); color: #1a1d23; }
+.btn-action.success { background: var(--success); color: #fff; }
+.btn-action.ghost {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+.btn-action.ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+
+/* Audio icon */
+.audio-icon { color: var(--critical); font-size: 12px; cursor: pointer; }
+.audio-icon:hover { color: #ff6060; }
+
+/* ===== SPLIT PANE (Screen 2) ===== */
+.split-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.split-top {
+  height: 50%;
+  min-height: 200px;
+  overflow: auto;
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+}
+.split-divider {
+  height: 6px;
+  background: linear-gradient(180deg, var(--border), var(--bg-panel-alt), var(--border));
+  cursor: ns-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.split-divider::after {
+  content: '';
+  width: 40px;
+  height: 2px;
+  background: var(--border-light);
+  border-radius: 1px;
+}
+.split-bottom {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== CAMERA TILES ===== */
+.camera-grid {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3, 1fr);
+}
+.camera-tile {
+  background: linear-gradient(135deg, #1a2030 0%, #0d1520 60%, #0a1018 100%);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  aspect-ratio: 16/9;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.camera-tile .cam-label {
+  position: absolute;
+  top: 4px; left: 6px;
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0,0,0,0.6);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+.camera-tile .cam-rec {
+  position: absolute;
+  top: 4px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--critical);
+  border-radius: 50%;
+  animation: rec-blink 1s infinite;
+}
+@keyframes rec-blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.camera-tile .cam-status {
+  position: absolute;
+  bottom: 4px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--online);
+  border-radius: 50%;
+}
+.camera-tile .cam-osd {
+  position: absolute;
+  bottom: 4px; left: 6px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  font-family: monospace;
+}
+.camera-tile .cam-noise {
+  width: 100%; height: 100%;
+  opacity: 0.15;
+}
+.cam-gradient-1 { background: linear-gradient(135deg, #0f1923, #162032, #0c1828) !important; }
+.cam-gradient-2 { background: linear-gradient(135deg, #0d1a20, #0f2028, #091520) !important; }
+.cam-gradient-3 { background: linear-gradient(135deg, #121825, #0e1830, #0a1220) !important; }
+.cam-gradient-4 { background: linear-gradient(135deg, #151c28, #0d1a30, #0b1622) !important; }
+.cam-gradient-5 { background: linear-gradient(135deg, #101822, #132030, #0e1625) !important; }
+.cam-gradient-6 { background: linear-gradient(135deg, #0e1520, #111d2a, #091318) !important; }
+
+/* Static grid classes for non-live-view grids */
+.g2x2 { grid-template-columns: repeat(2, 1fr) !important; }
+.g2x3 { grid-template-columns: repeat(3, 1fr) !important; }
+.g3x3 { grid-template-columns: repeat(3, 1fr) !important; }
+.g4x4 { grid-template-columns: repeat(4, 1fr) !important; }
+
+/* ===== FORMS ===== */
+.form-group { margin-bottom: 10px; }
+.form-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.form-control {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.form-control:focus { outline: none; border-color: var(--accent); }
+select.form-control { cursor: pointer; }
+textarea.form-control { resize: vertical; min-height: 60px; }
+
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+
+/* ===== SIDEBAR + CONTENT LAYOUT ===== */
+.sidebar-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.sidebar {
+  width: 240px;
+  min-width: 200px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar-content { flex: 1; overflow: auto; padding: 12px; }
+
+/* ===== TREE VIEW ===== */
+.tree-node {
+  padding: 4px 8px 4px 16px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.1s;
+}
+.tree-node:hover { background: var(--bg-input); color: var(--text-primary); }
+.tree-node.parent { font-weight: 600; color: var(--text-primary); padding-left: 8px; }
+.tree-node .node-icon { font-size: 12px; }
+.tree-children { padding-left: 12px; }
+.tree-node .status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tree-node .status-dot.online { background: var(--online); }
+.tree-node .status-dot.offline { background: var(--offline); }
+
+/* ===== QUICK LAUNCH ===== */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+.quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.quick-btn:hover {
+  background: var(--bg-input);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.quick-btn .qicon { font-size: 28px; }
+.quick-btn.danger-btn { border-color: var(--critical-border); }
+.quick-btn.danger-btn:hover { border-color: var(--critical); background: var(--critical-bg); }
+.quick-btn.warning-btn { border-color: var(--warning-border); }
+.quick-btn.warning-btn:hover { border-color: var(--warning); background: var(--warning-bg); }
+
+/* ===== MAP ===== */
+.map-container {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+}
+.map-controls {
+  position: absolute;
+  top: 10px; left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+.map-btn {
+  width: 30px; height: 30px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+}
+.map-btn:hover { background: var(--bg-input); }
+.map-filters {
+  position: absolute;
+  top: 10px; right: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+.filter-chip {
+  padding: 4px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.filter-chip:hover { border-color: var(--accent); }
+
+.device-marker {
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 3;
+  transition: transform 0.15s;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+.device-marker:hover { transform: scale(1.3); z-index: 4; }
+.device-marker.camera { background: #3b82f6; }
+.device-marker.door { background: #8b5cf6; }
+.device-marker.fire { background: #ef4444; }
+.device-marker.duress { background: #f59e0b; }
+.device-marker.intercom { background: #06b6d4; }
+.device-marker.iaz { background: #14b8a6; }
+.device-marker.alarm-active {
+  animation: marker-pulse 1s infinite;
+  box-shadow: 0 0 12px var(--critical);
+}
+@keyframes marker-pulse {
+  0%,100% { box-shadow: 0 0 6px var(--critical); }
+  50% { box-shadow: 0 0 18px var(--critical), 0 0 30px rgba(255,59,59,0.3); }
+}
+
+/* ===== DASHBOARD CARDS ===== */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.dash-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+.dash-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.dash-metric {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.dash-metric.good { color: var(--success); }
+.dash-metric.warn { color: var(--warning); }
+.dash-metric.bad { color: var(--critical); }
+.integration-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.integration-row:last-child { border-bottom: none; }
+.int-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.int-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.int-dot.online { background: var(--online); }
+.int-dot.offline { background: var(--offline); }
+.int-dot.degraded { background: var(--degraded); }
+
+/* ===== INTERCOM PANEL ===== */
+.intercom-layout { display: flex; flex: 1; gap: 12px; overflow: hidden; }
+.intercom-left { width: 280px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; overflow-y: auto; }
+.intercom-right { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.call-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.call-item:hover { background: var(--bg-input); }
+.call-item.ringing { border-color: var(--success); background: var(--success-bg); }
+.call-status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.call-status-dot.available { background: var(--online); }
+.call-status-dot.busy { background: var(--warning); }
+.call-status-dot.offline { background: var(--offline); }
+.call-status-dot.ringing { background: var(--success); animation: ring-pulse 0.8s infinite; }
+@keyframes ring-pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.3);} }
+
+.softphone-controls {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  justify-content: center;
+}
+.softphone-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.softphone-btn.answer { background: var(--success); color: #fff; }
+.softphone-btn.hangup { background: var(--critical); color: #fff; }
+.softphone-btn.transfer { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
+.softphone-btn:hover { transform: scale(1.1); }
+
+/* ===== TIMELINE ===== */
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.timeline-scrubber {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+.timeline-progress {
+  height: 100%;
+  width: 35%;
+  background: var(--accent);
+  border-radius: 3px;
+}
+.timeline-handle {
+  position: absolute;
+  top: -5px;
+  left: 35%;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: grab;
+}
+.timeline-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+}
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 12px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.status-bar-left, .status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+.status-item .sdot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.status-item .sdot.on { background: var(--online); }
+.status-item .sdot.off { background: var(--offline); }
+.status-item .sdot.deg { background: var(--degraded); }
+.alarm-count-bar {
+  display: flex; gap: 12px;
+}
+.alarm-count-bar span { font-weight: 700; }
+.alarm-count-bar .crit-count { color: var(--critical); }
+.alarm-count-bar .low-count { color: var(--warning); }
+.alarm-count-bar .total-count { color: var(--text-secondary); }
+
+/* ===== OVERLAY ===== */
+.overlay-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.overlay-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 1100px;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel-alt);
+  z-index: 2;
+}
+.overlay-header h3 {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.overlay-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.overlay-close:hover { color: var(--text-primary); }
+.overlay-body { padding: 16px; }
+
+/* Overlay backdrop label (clickable area to close) */
+.overlay-backdrop-label {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  cursor: pointer;
+  z-index: 0;
+}
+.overlay-panel { position: relative; z-index: 1; }
+
+/* ===== CHECKLIST ===== */
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+.checklist-item input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+.step-number {
+  width: 22px; height: 22px;
+  background: var(--bg-input);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-bar .form-control {
+  width: auto;
+  min-width: 140px;
+}
+
+/* ===== MISC ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.badge.critical { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+.badge.warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge.success { background: var(--success-bg); color: var(--success); }
+.badge.info { background: rgba(59,130,246,0.1); color: var(--accent); }
+
+.text-critical { color: var(--critical); }
+.text-warning { color: var(--warning); }
+.text-success { color: var(--success); }
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--text-primary); }
+
+.flex-row { display: flex; gap: 12px; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-1 { flex: 1; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mt-8 { margin-top: 8px; }
+.p-12 { padding: 12px; }
+.overflow-auto { overflow: auto; }
+.w-full { width: 100%; }
+
+/* Info Panel (Screen Allocation Matrix) */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.info-table th, .info-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.info-table th {
+  background: var(--bg-panel-alt);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.info-table td { color: var(--text-primary); }
+
+/* FMS iframe placeholder */
+.iframe-placeholder {
+  flex: 1;
+  min-height: 300px;
+  background: var(--bg-panel);
+  border: 2px dashed var(--border-light);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.iframe-placeholder .big-icon { font-size: 40px; }
+
+/* Access control */
+.door-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.door-row:hover { background: var(--bg-input); }
+
+/* Make all labels that act as buttons look clickable */
+label { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ===== ALL RADIO/CHECKBOX INPUTS AT TOP OF BODY ===== -->
+<!-- Screen switching radios -->
+<input type="radio" name="screen" id="screen-1" checked hidden>
+<input type="radio" name="screen" id="screen-2" hidden>
+<input type="radio" name="screen" id="screen-3" hidden>
+<input type="radio" name="screen" id="screen-4" hidden>
+
+<!-- Screen 1 sub-tabs -->
+<input type="radio" name="s1-tabs" id="s1-tab-0" checked hidden>
+<input type="radio" name="s1-tabs" id="s1-tab-1" hidden>
+<input type="radio" name="s1-tabs" id="s1-tab-2" hidden>
+<input type="radio" name="s1-tabs" id="s1-tab-3" hidden>
+
+<!-- Screen 2 sub-tabs -->
+<input type="radio" name="s2-tabs" id="s2-tab-0" checked hidden>
+<input type="radio" name="s2-tabs" id="s2-tab-1" hidden>
+<input type="radio" name="s2-tabs" id="s2-tab-2" hidden>
+<input type="radio" name="s2-tabs" id="s2-tab-3" hidden>
+
+<!-- Screen 3 sub-tabs -->
+<input type="radio" name="s3-tabs" id="s3-tab-0" checked hidden>
+<input type="radio" name="s3-tabs" id="s3-tab-1" hidden>
+<input type="radio" name="s3-tabs" id="s3-tab-2" hidden>
+<input type="radio" name="s3-tabs" id="s3-tab-3" hidden>
+<input type="radio" name="s3-tabs" id="s3-tab-4" hidden>
+<input type="radio" name="s3-tabs" id="s3-tab-5" hidden>
+
+<!-- Screen 4 sub-tabs -->
+<input type="radio" name="s4-tabs" id="s4-tab-0" checked hidden>
+<input type="radio" name="s4-tabs" id="s4-tab-1" hidden>
+<input type="radio" name="s4-tabs" id="s4-tab-2" hidden>
+<input type="radio" name="s4-tabs" id="s4-tab-3" hidden>
+<input type="radio" name="s4-tabs" id="s4-tab-4" hidden>
+<input type="radio" name="s4-tabs" id="s4-tab-5" hidden>
+
+<!-- Overlay toggles -->
+<input type="checkbox" id="alarm-popup-toggle" hidden>
+<input type="checkbox" id="info-panel-toggle" hidden>
+
+<!-- Filter toggles for map -->
+<input type="checkbox" id="filter-cctv" checked hidden>
+<input type="checkbox" id="filter-eacs" checked hidden>
+<input type="checkbox" id="filter-ics" checked hidden>
+<input type="checkbox" id="filter-iaz" checked hidden>
+<input type="checkbox" id="filter-fas" checked hidden>
+<input type="checkbox" id="filter-duress" checked hidden>
+
+<!-- Alarm view filter toggles -->
+<input type="checkbox" id="filter-critical" checked hidden>
+<input type="checkbox" id="filter-lowpri" checked hidden>
+
+<!-- Grid selector for live view -->
+<input type="radio" name="grid-sel" id="grid-2x2" hidden>
+<input type="radio" name="grid-sel" id="grid-2x3" checked hidden>
+<input type="radio" name="grid-sel" id="grid-3x3" hidden>
+<input type="radio" name="grid-sel" id="grid-4x4" hidden>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-brand">
+    <div class="logo">E</div>
+    <div>
+      <h1>Everbridge Control Center <span style="color:var(--accent)">—</span> ESS PSIM</h1>
+      <div class="subtitle">Physical Security Information Management</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <div class="header-clock" id="clockDisplay">08:42:17</div>
+      <div class="header-date" id="dateDisplay">Wednesday, 19 March 2026</div>
+    </div>
+    <div class="header-operator">
+      <div class="operator-avatar">JM</div>
+      <div>
+        <div class="operator-name">Jane Mitchell</div>
+        <div class="operator-role">ESS PSIM Operator &bull; Day Shift</div>
+      </div>
+    </div>
+    <label for="info-panel-toggle" class="btn-info">&#9432; Info</label>
+  </div>
+</header>
+
+<!-- ===== SCREEN NAV ===== -->
+<nav class="screen-nav">
+  <label for="screen-1" class="screen-tab">
+    <span class="tab-icon">&#127758;</span> S1: Situational
+  </label>
+  <label for="screen-2" class="screen-tab">
+    <span class="tab-icon">&#128680;</span> S2: Alarms <span class="alarm-badge">6</span>
+  </label>
+  <label for="screen-3" class="screen-tab">
+    <span class="tab-icon">&#127909;</span> S3: Video
+  </label>
+  <label for="screen-4" class="screen-tab">
+    <span class="tab-icon">&#9881;</span> S4: Admin
+  </label>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main-content">
+
+<!-- ================================================ -->
+<!-- SCREEN 1: Situational Awareness & Communications -->
+<!-- ================================================ -->
+<div class="screen-panel" id="s1-panel">
+  <div class="sub-tabs">
+    <label for="s1-tab-0" class="sub-tab">Floor Plan / Maps</label>
+    <label for="s1-tab-1" class="sub-tab">Intercom (Jacques ICS)</label>
+    <label for="s1-tab-2" class="sub-tab">FMS Dashboard (Trane)</label>
+    <label for="s1-tab-3" class="sub-tab">Quick Launch</label>
+  </div>
+
+  <!-- Tab 0: Floor Plan -->
+  <div class="sub-content" id="s1-content-0">
+    <div class="map-container" style="flex:1;">
+      <div class="map-controls">
+        <div class="map-btn" title="Zoom In">+</div>
+        <div class="map-btn" title="Zoom Out">&minus;</div>
+        <div class="map-btn" title="Fit View">&#8634;</div>
+      </div>
+      <div class="map-filters">
+        <label for="filter-cctv" class="filter-chip">CCTV</label>
+        <label for="filter-eacs" class="filter-chip">EACS</label>
+        <label for="filter-ics" class="filter-chip">ICS</label>
+        <label for="filter-iaz" class="filter-chip">IAZ</label>
+        <label for="filter-fas" class="filter-chip">FAS</label>
+        <label for="filter-duress" class="filter-chip">Duress</label>
+      </div>
+
+      <!-- SVG Floor Plan -->
+      <svg viewBox="0 0 900 500" style="width:100%;height:100%;position:absolute;top:0;left:0;">
+        <!-- Building Outline -->
+        <rect x="50" y="40" width="800" height="420" rx="4" fill="none" stroke="#2d3240" stroke-width="2"/>
+        <!-- Wings -->
+        <line x1="450" y1="40" x2="450" y2="460" stroke="#2d3240" stroke-width="1.5"/>
+        <line x1="50" y1="230" x2="850" y2="230" stroke="#2d3240" stroke-width="1.5"/>
+        <!-- Rooms -->
+        <rect x="60" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="150" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Emergency Dept</text>
+        <rect x="260" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="350" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Theatre 1-4</text>
+        <rect x="460" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="550" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Ward 4A/4B</text>
+        <rect x="660" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="750" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Pharmacy</text>
+        <rect x="60" y="150" width="180" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="150" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Main Entry</text>
+        <rect x="260" y="150" width="180" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="350" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Admin/Reception</text>
+        <rect x="460" y="150" width="380" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="650" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Car Park B</text>
+        <rect x="60" y="245" width="380" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="250" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Loading Dock / Stanley St</text>
+        <rect x="460" y="245" width="180" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="550" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Kitchen</text>
+        <rect x="660" y="245" width="180" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="750" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Pathology Lab</text>
+        <rect x="60" y="355" width="380" height="95" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="250" y="408" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Helipad / Plant</text>
+        <rect x="460" y="355" width="380" height="95" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
+        <text x="650" y="408" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Safe Room / Staff Areas</text>
+      </svg>
+
+      <!-- Device Markers -->
+      <div class="device-marker camera" style="left:12%;top:15%;" title="CAM-0101 ED Entry">C</div>
+      <div class="device-marker camera" style="left:28%;top:18%;" title="CAM-0115 Theatre Corridor">C</div>
+      <div class="device-marker camera" style="left:55%;top:15%;" title="CAM-0132 Ward 4B">C</div>
+      <div class="device-marker camera" style="left:72%;top:37%;" title="CAM-0142 Car Park B">C</div>
+      <div class="device-marker camera" style="left:40%;top:55%;" title="CAM-0155 Loading Dock">C</div>
+      <div class="device-marker camera" style="left:82%;top:15%;" title="CAM-0160 Pharmacy">C</div>
+      <div class="device-marker door" style="left:18%;top:30%;" title="Door-ED-01 Main ED Entry">D</div>
+      <div class="device-marker door" style="left:38%;top:30%;" title="Door-TH-03 Theatre 3">D</div>
+      <div class="device-marker door alarm-active" style="left:38%;top:33%;" title="Door-TH-03 FORCED OPEN">D</div>
+      <div class="device-marker fire" style="left:58%;top:55%;" title="Fire Zone 12 Kitchen">F</div>
+      <div class="device-marker fire alarm-active" style="left:59%;top:57%;" title="FIRE ALARM ACTIVE">F</div>
+      <div class="device-marker duress alarm-active" style="left:15%;top:16%;" title="Fixed Duress - Level 2 ED">!</div>
+      <div class="device-marker duress alarm-active" style="left:57%;top:14%;" title="Mobile Duress - Ward 4B">!</div>
+      <div class="device-marker intercom" style="left:17%;top:36%;" title="ICS-Main Entry">I</div>
+      <div class="device-marker intercom" style="left:30%;top:58%;" title="ICS-Loading Dock">I</div>
+      <div class="device-marker iaz" style="left:80%;top:17%;" title="IAZ-Pharmacy">Z</div>
+      <div class="device-marker iaz alarm-active" style="left:81%;top:19%;" title="IAZ Pharmacy ALARM">Z</div>
+    </div>
+  </div>
+
+  <!-- Tab 1: Intercom -->
+  <div class="sub-content" id="s1-content-1">
+    <div class="intercom-layout">
+      <div class="intercom-left">
+        <div class="panel">
+          <div class="panel-header">Incoming Call Queue</div>
+          <div class="panel-body" style="padding:6px;">
+            <div class="call-item ringing">
+              <div class="call-status-dot ringing"></div>
+              <div style="flex:1">
+                <div style="font-weight:600;color:var(--text-primary);font-size:12px;">Main Entry Station</div>
+                <div style="font-size:10px;color:var(--text-muted);">Ringing &bull; 0:08</div>
+              </div>
+              <span class="btn-action primary" style="font-size:9px;">Answer</span>
+            </div>
+            <div class="call-item" style="margin-top:4px;">
+              <div class="call-status-dot busy"></div>
+              <div style="flex:1">
+                <div style="font-weight:600;color:var(--text-primary);font-size:12px;">ED Help Point 2</div>
+                <div style="font-size:10px;color:var(--text-muted);">In Call &bull; 2:14</div>
+              </div>
+              <span class="badge warning">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">Device List</div>
+          <div class="panel-body" style="padding:4px;">
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">Main Entry Station</div></div>
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">ED Help Point 1</div></div>
+            <div class="call-item"><div class="call-status-dot busy"></div><div style="flex:1;font-size:11px;">ED Help Point 2</div></div>
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">Loading Dock Intercom</div></div>
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">Car Park B Entry</div></div>
+            <div class="call-item"><div class="call-status-dot offline"></div><div style="flex:1;font-size:11px;">Stanley St Gate</div></div>
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">Pharmacy Entry</div></div>
+            <div class="call-item"><div class="call-status-dot available"></div><div style="flex:1;font-size:11px;">Helipad Station</div></div>
+          </div>
+        </div>
+
+        <div class="softphone-controls">
+          <div class="softphone-btn answer" title="Answer">&#128222;</div>
+          <div class="softphone-btn hangup" title="Hang Up">&#128405;</div>
+          <div class="softphone-btn transfer" title="Transfer">&#8644;</div>
+          <div class="softphone-btn transfer" title="Hold">&#9208;</div>
+          <div class="softphone-btn transfer" title="Mute">&#128263;</div>
+        </div>
+      </div>
+
+      <div class="intercom-right">
+        <div style="display:flex;gap:10px;flex:1;">
+          <div style="flex:1;" class="panel">
+            <div class="panel-header">Built-in Camera Feed</div>
+            <div class="camera-tile cam-gradient-1" style="aspect-ratio:4/3;">
+              <div class="cam-label">Main Entry - ICS Cam</div>
+              <div class="cam-rec"></div>
+              <div class="cam-osd">2026-03-19 08:42:17</div>
+            </div>
+          </div>
+          <div style="flex:1;" class="panel">
+            <div class="panel-header">Nearby Milestone Camera</div>
+            <div class="camera-tile cam-gradient-2" style="aspect-ratio:4/3;">
+              <div class="cam-label">CAM-0101 Main Entry Wide</div>
+              <div class="cam-rec"></div>
+              <div class="cam-status"></div>
+              <div class="cam-osd">2026-03-19 08:42:17</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1;">
+          <div class="panel-header">Call Log</div>
+          <div class="panel-body" style="font-size:11px;overflow-y:auto;">
+            <table class="alarm-table">
+              <thead><tr><th>Time</th><th>Station</th><th>Duration</th><th>Operator</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>08:41:09</td><td>Main Entry Station</td><td>—</td><td>—</td><td><span class="badge warning">Ringing</span></td></tr>
+                <tr><td>08:38:22</td><td>ED Help Point 2</td><td>2:14</td><td>J. Mitchell</td><td><span class="badge info">Active</span></td></tr>
+                <tr><td>08:30:15</td><td>Loading Dock Intercom</td><td>1:42</td><td>J. Mitchell</td><td><span class="badge success">Completed</span></td></tr>
+                <tr><td>08:22:50</td><td>Car Park B Entry</td><td>0:38</td><td>J. Mitchell</td><td><span class="badge success">Completed</span></td></tr>
+                <tr><td>08:15:05</td><td>Helipad Station</td><td>0:22</td><td>J. Mitchell</td><td><span class="badge success">Completed</span></td></tr>
+                <tr><td>07:58:33</td><td>Main Entry Station</td><td>3:10</td><td>P. Chen</td><td><span class="badge success">Completed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: FMS Dashboard -->
+  <div class="sub-content" id="s1-content-2">
+    <div class="flex-col gap-12" style="flex:1;">
+      <div class="iframe-placeholder">
+        <div class="big-icon">&#127777;</div>
+        <div style="font-size:14px;font-weight:600;">Trane IQ Vision Dashboard</div>
+        <div style="font-size:11px;">iFrame Placeholder — Connect to Trane BMS Server</div>
+        <div style="font-size:10px;color:var(--border-light);">https://trane-iqvision.local/dashboard</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header warning">Fridge Monitoring Alerts</div>
+        <div class="panel-body">
+          <table class="alarm-table">
+            <thead><tr><th>Source</th><th>Location</th><th>Current Temp</th><th>Threshold</th><th>Duration</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr class="warning-row">
+                <td>Hospital</td><td>CCHR Pathology Lab - Fridge 3</td><td style="color:var(--critical);font-weight:700;">6.2&deg;C</td><td>2-5&deg;C</td><td>12 min</td><td><span class="status-badge status-new" style="background:var(--warning);color:#1a1d23;">Alert</span></td>
+              </tr>
+              <tr>
+                <td>Hospital</td><td>CCHR Pathology Lab - Fridge 1</td><td style="color:var(--success);">3.1&deg;C</td><td>2-5&deg;C</td><td>—</td><td><span class="status-badge status-resolved">OK</span></td>
+              </tr>
+              <tr>
+                <td>Hospital</td><td>CCHR Pathology Lab - Fridge 2</td><td style="color:var(--success);">4.0&deg;C</td><td>2-5&deg;C</td><td>—</td><td><span class="status-badge status-resolved">OK</span></td>
+              </tr>
+              <tr>
+                <td>Non-Pathology</td><td>Pharmacy Cold Store</td><td style="color:var(--success);">2.8&deg;C</td><td>2-8&deg;C</td><td>—</td><td><span class="status-badge status-resolved">OK</span></td>
+              </tr>
+              <tr>
+                <td>Pathology</td><td>Blood Bank Fridge A</td><td style="color:var(--success);">4.5&deg;C</td><td>2-6&deg;C</td><td>—</td><td><span class="status-badge status-resolved">OK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Quick Launch -->
+  <div class="sub-content" id="s1-content-3">
+    <div class="quick-grid" style="max-width:900px;margin:20px auto;">
+      <div class="quick-btn"><div class="qicon">&#128681;</div>Helipad<div style="font-size:10px;color:var(--text-muted);">Cameras + Comms</div></div>
+      <div class="quick-btn danger-btn"><div class="qicon">&#127973;</div>ED / Safe Room<div style="font-size:10px;color:var(--text-muted);">Emergency Dept Access</div></div>
+      <div class="quick-btn"><div class="qicon">&#128739;</div>Stanley Street<div style="font-size:10px;color:var(--text-muted);">Gates + Cameras</div></div>
+      <div class="quick-btn"><div class="qicon">&#128666;</div>Loading Dock<div style="font-size:10px;color:var(--text-muted);">Access + Intercom</div></div>
+      <div class="quick-btn danger-btn"><div class="qicon">&#128274;</div>Lockdown — SOFT<div style="font-size:10px;color:var(--text-muted);">Restrict Perimeter</div></div>
+      <div class="quick-btn danger-btn"><div class="qicon">&#128721;</div>Lockdown — HARD<div style="font-size:10px;color:var(--text-muted);">Full Facility Lock</div></div>
+      <div class="quick-btn"><div class="qicon">&#128269;</div>Appearance Search<div style="font-size:10px;color:var(--text-muted);">Irisity AI Search</div></div>
+      <div class="quick-btn warning-btn"><div class="qicon">&#128196;</div>Active Incidents<div style="font-size:10px;color:var(--text-muted);">View All Open</div></div>
+      <div class="quick-btn"><div class="qicon">&#128100;</div>Cardholder Lookup<div style="font-size:10px;color:var(--text-muted);">Inner Range Search</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================== -->
+<!-- SCREEN 2: Alarm & Incident Management -->
+<!-- ==================================== -->
+<div class="screen-panel" id="s2-panel">
+  <div class="split-container">
+    <!-- TOP PANE: Always-visible Alarm Grid -->
+    <div class="split-top">
+      <div style="display:flex;align-items:center;padding:6px 12px;background:var(--bg-panel-alt);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0;">
+        <span style="font-size:11px;font-weight:700;color:var(--text-primary);letter-spacing:0.5px;">ALARM MONITORING</span>
+        <div style="display:flex;gap:4px;">
+          <label for="filter-critical" class="filter-chip">Critical</label>
+          <label for="filter-lowpri" class="filter-chip">Low Priority</label>
+        </div>
+        <div style="flex:1;"></div>
+        <span class="audio-icon" title="Audio Alerts Enabled">&#128266;</span>
+        <label for="alarm-popup-toggle" class="btn-action ghost">&#9632; Alarm Pop-up</label>
+        <span style="font-size:10px;color:var(--text-muted);">Auto-refresh: 5s</span>
+      </div>
+
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <!-- Critical Alarms -->
+        <div style="flex:1;overflow:auto;border-right:1px solid var(--border);">
+          <div class="panel-header critical" style="position:sticky;top:0;z-index:2;">&#9888; Critical Alarms <span class="badge critical" style="margin-left:8px;">6</span></div>
+          <table class="alarm-table">
+            <thead>
+              <tr>
+                <th style="width:30px;"><input type="checkbox"></th>
+                <th>Alarm ID</th>
+                <th>Alarm Point</th>
+                <th>Priority</th>
+                <th>Description</th>
+                <th>Source</th>
+                <th>Handler</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="critical-row unacked">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4401</td>
+                <td>Level 2 ED — Fixed Duress</td>
+                <td><span class="badge critical">P1</span></td>
+                <td>Fixed Duress Alarm Activated — Emergency Department Level 2</td>
+                <td>Inner Range</td>
+                <td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:4px;"></span>J. Mitchell</td>
+                <td style="font-variant-numeric:tabular-nums;">08:41:32</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><label for="alarm-popup-toggle" class="btn-action primary">ACK</label></td>
+              </tr>
+              <tr class="critical-row unacked">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4402</td>
+                <td>Ward 4B — Mobile Duress</td>
+                <td><span class="badge critical">P1</span></td>
+                <td>Mobile Duress — Nurse J. Thompson (Ascom Badge #1842)</td>
+                <td>Ascom</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:40:55</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><span class="btn-action primary">ACK</span></td>
+              </tr>
+              <tr class="critical-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4398</td>
+                <td>Theatre 3 — Door Forced</td>
+                <td><span class="badge critical">P1</span></td>
+                <td>Door Forced Open — Theatre 3 Sterile Corridor</td>
+                <td>Inner Range</td>
+                <td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:4px;"></span>J. Mitchell</td>
+                <td style="font-variant-numeric:tabular-nums;">08:38:17</td>
+                <td><span class="status-badge status-ack">ACK</span></td>
+                <td><span class="btn-action warning">View</span></td>
+              </tr>
+              <tr class="critical-row unacked">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4399</td>
+                <td>Zone 12 Kitchen — Fire</td>
+                <td><span class="badge critical">P1</span></td>
+                <td>Fire Alarm Activated — Zone 12 Kitchen Area</td>
+                <td>Petronics</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:37:44</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><span class="btn-action primary">ACK</span></td>
+              </tr>
+              <tr class="critical-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4395</td>
+                <td>Loading Dock — ANPR Blacklist</td>
+                <td><span class="badge critical">P2</span></td>
+                <td>ANPR Blacklist Match — Plate: ABC-123 Loading Dock Entry</td>
+                <td>Milestone</td>
+                <td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:4px;"></span>J. Mitchell</td>
+                <td style="font-variant-numeric:tabular-nums;">08:35:02</td>
+                <td><span class="status-badge status-ack">ACK</span></td>
+                <td><span class="btn-action warning">View</span></td>
+              </tr>
+              <tr class="critical-row unacked">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--critical);">ALM-4400</td>
+                <td>Pharmacy — Intrusion IAZ</td>
+                <td><span class="badge critical">P1</span></td>
+                <td>Intrusion Alarm — Pharmacy IAZ Zone After Hours</td>
+                <td>Inner Range</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:39:21</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><span class="btn-action primary">ACK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Low Priority / Advisory -->
+        <div style="flex:1;overflow:auto;">
+          <div class="panel-header warning" style="position:sticky;top:0;z-index:2;">&#128312; Low Priority / Advisory <span class="badge warning" style="margin-left:8px;">4</span></div>
+          <table class="alarm-table">
+            <thead>
+              <tr>
+                <th style="width:30px;"><input type="checkbox"></th>
+                <th>Alarm ID</th>
+                <th>Alarm Point</th>
+                <th>Priority</th>
+                <th>Description</th>
+                <th>Source</th>
+                <th>Handler</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="warning-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--warning);">ALM-4396</td>
+                <td>Car Park B Entry — VCA</td>
+                <td><span class="badge warning">P3</span></td>
+                <td>VCA Loitering Detected — Car Park B Entry Zone</td>
+                <td>Irisity</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:36:10</td>
+                <td><span class="status-badge status-new" style="background:var(--warning);color:#1a1d23;">New</span></td>
+                <td><span class="btn-action warning">ACK</span></td>
+              </tr>
+              <tr class="warning-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--warning);">ALM-4393</td>
+                <td>Main Entry — Unanswered Call</td>
+                <td><span class="badge warning">P4</span></td>
+                <td>Unanswered Intercom Call — Main Entry Station (3 rings)</td>
+                <td>Jacques</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:33:45</td>
+                <td><span class="status-badge status-ack">ACK</span></td>
+                <td><span class="btn-action ghost">View</span></td>
+              </tr>
+              <tr class="warning-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--warning);">ALM-4390</td>
+                <td>Cam-0142 — Camera Offline</td>
+                <td><span class="badge warning">P3</span></td>
+                <td>Camera Offline — CAM-0142 Car Park B (Loss of Connection)</td>
+                <td>Milestone</td>
+                <td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:4px;"></span>J. Mitchell</td>
+                <td style="font-variant-numeric:tabular-nums;">08:25:18</td>
+                <td><span class="status-badge status-ack">ACK</span></td>
+                <td><span class="btn-action ghost">View</span></td>
+              </tr>
+              <tr class="warning-row">
+                <td><input type="checkbox"></td>
+                <td style="font-weight:700;color:var(--warning);">ALM-4397</td>
+                <td>CCHR Path Lab — Fridge Temp</td>
+                <td><span class="badge warning">P3</span></td>
+                <td>Fridge Temperature Alert — CCHR Pathology Lab Fridge 3 (6.2&deg;C)</td>
+                <td>Trane</td>
+                <td>—</td>
+                <td style="font-variant-numeric:tabular-nums;">08:36:55</td>
+                <td><span class="status-badge status-new" style="background:var(--warning);color:#1a1d23;">New</span></td>
+                <td><span class="btn-action warning">ACK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="split-divider"></div>
+
+    <!-- BOTTOM PANE: Tabbed Views -->
+    <div class="split-bottom">
+      <div class="sub-tabs">
+        <label for="s2-tab-0" class="sub-tab">Incident Creation</label>
+        <label for="s2-tab-1" class="sub-tab">Incident Detail</label>
+        <label for="s2-tab-2" class="sub-tab">Alarm History</label>
+        <label for="s2-tab-3" class="sub-tab">Alarm Correlation</label>
+      </div>
+
+      <!-- Incident Creation -->
+      <div class="sub-content" id="s2-content-0" style="overflow-y:auto;">
+        <div style="display:flex;gap:16px;flex:1;">
+          <div style="flex:2;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Incident Type</label>
+                <select class="form-control">
+                  <option>Duress — Staff</option>
+                  <option>Duress — Patient</option>
+                  <option>Fire Alarm</option>
+                  <option>Security Breach</option>
+                  <option>Medical Emergency</option>
+                  <option>Code Black</option>
+                  <option>Code Grey</option>
+                  <option>Trespass</option>
+                  <option>Theft</option>
+                  <option>Vehicle Incident</option>
+                  <option>Infrastructure Fault</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primary Zone</label>
+                <select class="form-control">
+                  <option>Emergency Department</option>
+                  <option>Ward 4A</option>
+                  <option>Ward 4B</option>
+                  <option>Theatre 1-4</option>
+                  <option>Pharmacy</option>
+                  <option>Car Park B</option>
+                  <option>Loading Dock</option>
+                  <option>Kitchen</option>
+                  <option>Pathology Lab</option>
+                  <option>Main Entry</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Secondary Zone</label>
+                <select class="form-control">
+                  <option>—</option>
+                  <option>Level 1</option>
+                  <option>Level 2</option>
+                  <option>Level 3</option>
+                  <option>External</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Alarm Correlation (Link Alarms)</label>
+                <select class="form-control" multiple style="min-height:50px;">
+                  <option selected>ALM-4401 — Fixed Duress Level 2 ED</option>
+                  <option selected>ALM-4402 — Mobile Duress Ward 4B</option>
+                  <option>ALM-4398 — Door Forced Theatre 3</option>
+                  <option>ALM-4399 — Fire Zone 12</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Assigned Patrol Guards</label>
+                <select class="form-control" multiple style="min-height:50px;">
+                  <option selected>G-101 M. Roberts (BWC Active &#9679;)</option>
+                  <option>G-102 D. Nguyen (BWC Active &#9679;)</option>
+                  <option>G-103 S. Patel (BWC Offline &#9675;)</option>
+                  <option>G-104 T. Brown (BWC Active &#9679;)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Arrival Time</label><input type="time" class="form-control" value="08:42"></div>
+              <div class="form-group"><label class="form-label">End Time (Mandatory)</label><input type="time" class="form-control"></div>
+              <div class="form-group"><label class="form-label">Risk Man Number</label><input type="text" class="form-control" placeholder="RM-2026-XXXX"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Free Text Notes</label>
+              <textarea class="form-control" placeholder="Enter incident details, observations, actions taken...">Fixed duress activated in ED Level 2 by Nurse J. Thompson. Simultaneously, mobile duress badge triggered in Ward 4B. Possibly related - patient in ED became aggressive. Guard dispatched.</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Document Upload</label>
+                <div style="border:2px dashed var(--border-light);border-radius:6px;padding:16px;text-align:center;color:var(--text-muted);font-size:11px;">
+                  Drag & drop files here (.pdf, .docx, .png, .jpg, .mp4)<br>
+                  <span class="btn-action ghost" style="margin-top:8px;">Browse Files</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <span class="btn-action primary" style="padding:8px 24px;font-size:12px;">Submit Incident</span>
+              <span class="btn-action warning" style="padding:8px 24px;font-size:12px;">Park (Save Draft)</span>
+              <span class="btn-action ghost" style="padding:8px 24px;font-size:12px;">Clear Form</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div class="panel mb-12">
+              <div class="panel-header">Action Steps</div>
+              <div class="panel-body">
+                <div class="checklist-item"><div class="step-number">1</div><input type="checkbox" checked><span>Notify 555 — Code Grey</span></div>
+                <div class="checklist-item"><div class="step-number">2</div><input type="checkbox" checked><span>Dispatch Guards to Location</span></div>
+                <div class="checklist-item"><div class="step-number">3</div><input type="checkbox"><span>Verify Location via Camera</span></div>
+                <div class="checklist-item"><div class="step-number">4</div><input type="checkbox"><span>Activate BWC Recording</span></div>
+                <div class="checklist-item"><div class="step-number">5</div><input type="checkbox"><span>Notify Nurse Unit Manager</span></div>
+                <div class="checklist-item"><div class="step-number">6</div><input type="checkbox"><span>Complete RiskMan Report</span></div>
+                <div class="checklist-item"><div class="step-number">7</div><input type="checkbox"><span>Close Incident / End Time</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incident Detail -->
+      <div class="sub-content" id="s2-content-1" style="overflow-y:auto;">
+        <div style="display:flex;gap:12px;flex:1;">
+          <div style="flex:1;">
+            <div class="panel mb-12">
+              <div class="panel-header">Incident INC-2026-0847 &mdash; Duress Staff (Active)
+                <div style="display:flex;gap:6px;">
+                  <span class="btn-action ghost">Export PDF</span>
+                  <span class="btn-action success">Resolve</span>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div style="display:flex;gap:16px;margin-bottom:12px;">
+                  <div><span class="form-label">Status</span><br><span class="badge critical">Active</span></div>
+                  <div><span class="form-label">Location</span><br><span style="color:var(--text-primary);">ED Level 2</span></div>
+                  <div><span class="form-label">Created</span><br><span style="color:var(--text-primary);">08:41:32</span></div>
+                  <div><span class="form-label">Operator</span><br><span style="color:var(--text-primary);">J. Mitchell</span></div>
+                  <div><span class="form-label">Guards</span><br><span style="color:var(--text-primary);">M. Roberts, D. Nguyen</span></div>
+                </div>
+                <!-- Status Timeline -->
+                <div class="form-label mb-8">Status Timeline</div>
+                <div style="display:flex;align-items:center;gap:0;margin-bottom:12px;">
+                  <div style="text-align:center;"><div style="width:12px;height:12px;background:var(--success);border-radius:50%;margin:0 auto;"></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Created<br>08:41:32</div></div>
+                  <div style="flex:1;height:2px;background:var(--success);"></div>
+                  <div style="text-align:center;"><div style="width:12px;height:12px;background:var(--warning);border-radius:50%;margin:0 auto;"></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">ACK<br>08:41:45</div></div>
+                  <div style="flex:1;height:2px;background:var(--warning);"></div>
+                  <div style="text-align:center;"><div style="width:12px;height:12px;background:var(--accent);border-radius:50%;margin:0 auto;"></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Guard Dispatched<br>08:42:01</div></div>
+                  <div style="flex:1;height:2px;background:var(--border-light);border-style:dashed;"></div>
+                  <div style="text-align:center;"><div style="width:12px;height:12px;background:var(--border-light);border-radius:50%;margin:0 auto;"></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Resolved<br>—</div></div>
+                </div>
+
+                <div class="form-label mb-8">Action Steps</div>
+                <div class="checklist-item"><div class="step-number" style="background:var(--success);color:#fff;">1</div><input type="checkbox" checked><span style="text-decoration:line-through;color:var(--text-muted);">Notify 555 — Code Grey</span><span class="text-muted" style="font-size:10px;margin-left:8px;">08:41:38</span></div>
+                <div class="checklist-item"><div class="step-number" style="background:var(--success);color:#fff;">2</div><input type="checkbox" checked><span style="text-decoration:line-through;color:var(--text-muted);">Dispatch Guards to Location</span><span class="text-muted" style="font-size:10px;margin-left:8px;">08:42:01</span></div>
+                <div class="checklist-item"><div class="step-number" style="background:var(--accent);color:#fff;">3</div><input type="checkbox"><span>Verify Location via Camera</span></div>
+                <div class="checklist-item"><div class="step-number">4</div><input type="checkbox"><span>Activate BWC Recording</span></div>
+                <div class="checklist-item"><div class="step-number">5</div><input type="checkbox"><span>Complete RiskMan Report</span></div>
+
+                <div class="form-label mb-8 mt-8">Audit Trail</div>
+                <div style="font-size:11px;border-left:2px solid var(--border-light);padding-left:10px;">
+                  <div style="padding:4px 0;"><span style="color:var(--text-muted);">08:41:32</span> — Alarm ALM-4401 triggered incident creation <span class="badge info">System</span></div>
+                  <div style="padding:4px 0;"><span style="color:var(--text-muted);">08:41:38</span> — Notification sent to 555 <span class="badge info">J. Mitchell</span></div>
+                  <div style="padding:4px 0;"><span style="color:var(--text-muted);">08:41:45</span> — Alarm acknowledged <span class="badge info">J. Mitchell</span></div>
+                  <div style="padding:4px 0;"><span style="color:var(--text-muted);">08:42:01</span> — Guard M. Roberts dispatched, BWC activated <span class="badge info">J. Mitchell</span></div>
+                  <div style="padding:4px 0;"><span style="color:var(--text-muted);">08:42:05</span> — Alarm ALM-4402 correlated to incident <span class="badge info">System</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div class="panel-header" style="background:var(--bg-panel-alt);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;">Linked Cameras <div style="display:flex;gap:4px;"><span class="btn-action ghost">Live</span><span class="btn-action primary">Playback</span></div></div>
+            <div class="camera-grid g2x3" style="border:1px solid var(--border);border-radius:0 0 6px 6px;overflow:hidden;">
+              <div class="camera-tile cam-gradient-1"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+              <div class="camera-tile cam-gradient-2"><div class="cam-label">CAM-0102 ED Corridor</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+              <div class="camera-tile cam-gradient-3"><div class="cam-label">CAM-0115 ED L2 Nurses</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+              <div class="camera-tile cam-gradient-4"><div class="cam-label">CAM-0132 Ward 4B</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+              <div class="camera-tile cam-gradient-5"><div class="cam-label">CAM-0133 Ward 4B Corr</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+              <div class="camera-tile cam-gradient-6"><div class="cam-label">CAM-0103 ED Waiting</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            </div>
+            <div class="panel mt-8">
+              <div class="panel-header">Snapshot Gallery</div>
+              <div style="display:flex;gap:6px;padding:8px;flex-wrap:wrap;">
+                <div style="width:80px;height:50px;background:var(--bg-input);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-muted);">08:41:33</div>
+                <div style="width:80px;height:50px;background:var(--bg-input);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-muted);">08:41:38</div>
+                <div style="width:80px;height:50px;background:var(--bg-input);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-muted);">08:42:02</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alarm History -->
+      <div class="sub-content" id="s2-content-2" style="overflow-y:auto;">
+        <div class="filter-bar">
+          <select class="form-control"><option>All Source Systems</option><option>Inner Range</option><option>Milestone</option><option>Ascom</option><option>Jacques</option><option>Irisity</option><option>Trane</option><option>Petronics</option></select>
+          <select class="form-control"><option>All Event Types</option><option>Duress</option><option>Door Alarm</option><option>Fire</option><option>VCA</option><option>Intercom</option><option>Camera</option><option>ANPR</option><option>Temperature</option></select>
+          <select class="form-control"><option>All Zones</option><option>Emergency Dept</option><option>Ward 4A</option><option>Ward 4B</option><option>Theatre</option><option>Pharmacy</option><option>Car Park</option><option>Loading Dock</option></select>
+          <select class="form-control"><option>All Priorities</option><option>P1 Critical</option><option>P2 High</option><option>P3 Medium</option><option>P4 Low</option></select>
+          <input type="date" class="form-control" value="2026-03-19" style="width:140px;">
+          <input type="date" class="form-control" value="2026-03-19" style="width:140px;">
+          <span class="btn-action primary">Search</span>
+          <span class="btn-action ghost">Export</span>
+        </div>
+        <div class="panel" style="flex:1;">
+          <table class="alarm-table">
+            <thead><tr><th>Alarm ID</th><th>Alarm Point</th><th>Priority</th><th>Description</th><th>Source</th><th>Handler</th><th>Time</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr class="critical-row"><td>ALM-4401</td><td>Level 2 ED — Fixed Duress</td><td><span class="badge critical">P1</span></td><td>Fixed Duress Activated</td><td>Inner Range</td><td>J. Mitchell</td><td>08:41:32</td><td><span class="status-badge status-new">New</span></td></tr>
+              <tr class="critical-row"><td>ALM-4402</td><td>Ward 4B — Mobile Duress</td><td><span class="badge critical">P1</span></td><td>Mobile Duress Badge</td><td>Ascom</td><td>—</td><td>08:40:55</td><td><span class="status-badge status-new">New</span></td></tr>
+              <tr class="critical-row"><td>ALM-4400</td><td>Pharmacy — Intrusion IAZ</td><td><span class="badge critical">P1</span></td><td>Intrusion Alarm After Hours</td><td>Inner Range</td><td>—</td><td>08:39:21</td><td><span class="status-badge status-new">New</span></td></tr>
+              <tr class="critical-row"><td>ALM-4399</td><td>Zone 12 Kitchen — Fire</td><td><span class="badge critical">P1</span></td><td>Fire Alarm Zone 12</td><td>Petronics</td><td>—</td><td>08:37:44</td><td><span class="status-badge status-new">New</span></td></tr>
+              <tr class="critical-row"><td>ALM-4398</td><td>Theatre 3 — Door Forced</td><td><span class="badge critical">P1</span></td><td>Door Forced Open</td><td>Inner Range</td><td>J. Mitchell</td><td>08:38:17</td><td><span class="status-badge status-ack">ACK</span></td></tr>
+              <tr class="warning-row"><td>ALM-4397</td><td>CCHR Path Lab — Fridge</td><td><span class="badge warning">P3</span></td><td>Fridge Temp 6.2&deg;C</td><td>Trane</td><td>—</td><td>08:36:55</td><td><span class="status-badge status-new" style="background:var(--warning);color:#1a1d23;">New</span></td></tr>
+              <tr class="warning-row"><td>ALM-4396</td><td>Car Park B — VCA Loitering</td><td><span class="badge warning">P3</span></td><td>Loitering Detected</td><td>Irisity</td><td>—</td><td>08:36:10</td><td><span class="status-badge status-new" style="background:var(--warning);color:#1a1d23;">New</span></td></tr>
+              <tr class="critical-row"><td>ALM-4395</td><td>Loading Dock — ANPR</td><td><span class="badge critical">P2</span></td><td>Blacklist Match ABC-123</td><td>Milestone</td><td>J. Mitchell</td><td>08:35:02</td><td><span class="status-badge status-ack">ACK</span></td></tr>
+              <tr class="warning-row"><td>ALM-4393</td><td>Main Entry — Unanswered</td><td><span class="badge warning">P4</span></td><td>Unanswered ICS Call</td><td>Jacques</td><td>—</td><td>08:33:45</td><td><span class="status-badge status-ack">ACK</span></td></tr>
+              <tr class="warning-row"><td>ALM-4390</td><td>Cam-0142 — Offline</td><td><span class="badge warning">P3</span></td><td>Camera Loss of Connection</td><td>Milestone</td><td>J. Mitchell</td><td>08:25:18</td><td><span class="status-badge status-ack">ACK</span></td></tr>
+              <tr><td>ALM-4385</td><td>ED Entry — Door Held</td><td><span class="badge info">P4</span></td><td>Door Held Open > 30s</td><td>Inner Range</td><td>P. Chen</td><td>08:10:05</td><td><span class="status-badge status-resolved">Closed</span></td></tr>
+              <tr><td>ALM-4380</td><td>Ward 4A — Access Denied</td><td><span class="badge info">P4</span></td><td>Invalid Card Attempt</td><td>Inner Range</td><td>P. Chen</td><td>07:55:22</td><td><span class="status-badge status-resolved">Closed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alarm Correlation -->
+      <div class="sub-content" id="s2-content-3">
+        <div style="display:flex;gap:12px;flex:1;">
+          <div style="flex:1;" class="panel">
+            <div class="panel-header critical">Critical Alarms (Drag to correlate)</div>
+            <div class="panel-body">
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" checked style="margin-right:6px;">ALM-4401 — Fixed Duress Level 2 ED
+                <span class="badge critical" style="float:right;">Grouped</span>
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" checked style="margin-right:6px;">ALM-4402 — Mobile Duress Ward 4B
+                <span class="badge critical" style="float:right;">Grouped</span>
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4398 — Door Forced Theatre 3
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4399 — Fire Zone 12 Kitchen
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4395 — ANPR Blacklist Loading Dock
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4400 — Intrusion Pharmacy IAZ
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 8px;">
+            <span class="btn-action primary" style="font-size:16px;padding:6px 12px;">&rarr;</span>
+            <span class="btn-action ghost" style="font-size:16px;padding:6px 12px;">&larr;</span>
+            <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px;">Group /<br>De-associate</div>
+          </div>
+          <div style="flex:1;" class="panel">
+            <div class="panel-header warning">Low Priority (Drag to correlate)</div>
+            <div class="panel-body">
+              <div style="padding:6px 8px;margin:4px 0;background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4396 — VCA Loitering Car Park B
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4393 — Unanswered Call Main Entry
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4390 — Camera Offline Cam-0142
+              </div>
+              <div style="padding:6px 8px;margin:4px 0;background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:4px;cursor:grab;font-size:11px;">
+                <input type="checkbox" style="margin-right:6px;">ALM-4397 — Fridge Temp CCHR Path Lab
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;" class="panel">
+            <div class="panel-header" style="color:var(--accent);border-left:3px solid var(--accent);">Correlation Groups</div>
+            <div class="panel-body">
+              <div style="padding:8px;margin:4px 0;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);border-radius:4px;font-size:11px;">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:4px;">Group CG-001 — Duress Incident ED/Ward 4B</div>
+                <div style="color:var(--text-secondary);">ALM-4401 (Fixed Duress ED L2)</div>
+                <div style="color:var(--text-secondary);">ALM-4402 (Mobile Duress Ward 4B)</div>
+                <div style="margin-top:4px;"><span class="badge info">INC-2026-0847</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- SCREEN 3: Video Surveillance   -->
+<!-- ============================== -->
+<div class="screen-panel" id="s3-panel">
+  <div class="sub-tabs">
+    <label for="s3-tab-0" class="sub-tab">Live View</label>
+    <label for="s3-tab-1" class="sub-tab">Playback</label>
+    <label for="s3-tab-2" class="sub-tab">VCA / Analytics (Irisity)</label>
+    <label for="s3-tab-3" class="sub-tab">ANPR</label>
+    <label for="s3-tab-4" class="sub-tab">BWC Management (Axon)</label>
+    <label for="s3-tab-5" class="sub-tab">Video Wall Control</label>
+  </div>
+
+  <!-- Live View -->
+  <div class="sub-content" id="s3-content-0">
+    <div class="sidebar-layout">
+      <div class="sidebar" style="width:220px;">
+        <div style="padding:8px;border-bottom:1px solid var(--border);">
+          <input type="text" class="form-control" placeholder="Search cameras..." style="font-size:11px;">
+        </div>
+        <div style="padding:4px;">
+          <div class="tree-node parent"><span class="node-icon">&#128247;</span> All Cameras (142)</div>
+          <div class="tree-children">
+            <div class="tree-node parent"><span class="node-icon">&#9660;</span> Emergency Department</div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0101 ED Entry</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0102 ED Corridor</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0103 ED Waiting</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0104 ED Triage</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0115 ED L2 Nurses</div>
+            </div>
+            <div class="tree-node parent"><span class="node-icon">&#9660;</span> Theatre Complex</div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0120 Theatre Lobby</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0121 Theatre Corridor</div>
+            </div>
+            <div class="tree-node parent"><span class="node-icon">&#9660;</span> Wards</div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0130 Ward 4A Entry</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0131 Ward 4A Corr</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0132 Ward 4B</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0133 Ward 4B Corr</div>
+            </div>
+            <div class="tree-node parent"><span class="node-icon">&#9660;</span> Car Park</div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0140 Car Park A Entry</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0141 Car Park A Exit</div>
+              <div class="tree-node"><span class="status-dot offline"></span> CAM-0142 Car Park B</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0143 Car Park B Exit</div>
+            </div>
+            <div class="tree-node parent"><span class="node-icon">&#9660;</span> External / Perimeter</div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0155 Loading Dock</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0156 Stanley St Gate</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0160 Pharmacy Ext</div>
+              <div class="tree-node"><span class="status-dot online"></span> CAM-0170 Helipad</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-content" style="padding:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600;">GRID:</span>
+          <label for="grid-2x2" class="btn-action ghost grid-sel-label">2x2</label>
+          <label for="grid-2x3" class="btn-action ghost grid-sel-label">2x3</label>
+          <label for="grid-3x3" class="btn-action ghost grid-sel-label">3x3</label>
+          <label for="grid-4x4" class="btn-action ghost grid-sel-label">4x4</label>
+        </div>
+        <div class="camera-grid" id="liveViewGrid">
+          <div class="camera-tile cam-gradient-1"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-2"><div class="cam-label">CAM-0102 ED Corridor</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-3"><div class="cam-label">CAM-0115 ED L2 Nurses</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-4"><div class="cam-label">CAM-0132 Ward 4B</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC SAN | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-5"><div class="cam-label">CAM-0155 Loading Dock</div><div class="cam-rec"></div><div class="cam-status"></div><div class="cam-osd">REC NAS | 2026-03-19 08:42</div></div>
+          <div class="camera-tile cam-gradient-6" style="position:relative;"><div class="cam-label">CAM-0142 Car Park B</div><div class="cam-status" style="background:var(--offline);"></div><div class="cam-osd" style="color:var(--critical);">OFFLINE — No Signal</div><div style="color:var(--critical);font-size:20px;">&#9888;</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Playback -->
+  <div class="sub-content" id="s3-content-1">
+    <div style="display:flex;gap:12px;flex:1;flex-direction:column;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select class="form-control" style="width:220px;"><option>CAM-0101 ED Entry</option><option>CAM-0102 ED Corridor</option><option>CAM-0115 ED L2 Nurses</option><option>CAM-0132 Ward 4B</option></select>
+        <input type="date" class="form-control" style="width:150px;" value="2026-03-19">
+        <input type="time" class="form-control" style="width:120px;" value="08:30">
+        <span class="btn-action primary">Load</span>
+        <span class="btn-action ghost">&#128247; Snapshot</span>
+        <span class="btn-action ghost">&#128229; Export Clip</span>
+        <div style="flex:1;"></div>
+        <span style="font-size:10px;color:var(--text-muted);">Synchronized Playback: 4 cameras</span>
+      </div>
+      <div class="camera-grid g2x2" style="flex:1;">
+        <div class="camera-tile cam-gradient-1" style="aspect-ratio:auto;"><div class="cam-label">CAM-0101 ED Entry [Playback]</div><div class="cam-osd">2026-03-19 08:30:00</div></div>
+        <div class="camera-tile cam-gradient-3" style="aspect-ratio:auto;"><div class="cam-label">CAM-0102 ED Corridor [Playback]</div><div class="cam-osd">2026-03-19 08:30:00</div></div>
+        <div class="camera-tile cam-gradient-5" style="aspect-ratio:auto;"><div class="cam-label">CAM-0115 ED L2 Nurses [Playback]</div><div class="cam-osd">2026-03-19 08:30:00</div></div>
+        <div class="camera-tile cam-gradient-2" style="aspect-ratio:auto;"><div class="cam-label">CAM-0132 Ward 4B [Playback]</div><div class="cam-osd">2026-03-19 08:30:00</div></div>
+      </div>
+      <div class="timeline-bar">
+        <span class="btn-action ghost" style="font-size:14px;">&#9198;</span>
+        <span class="btn-action ghost" style="font-size:14px;">&#9664;</span>
+        <span class="btn-action primary" style="font-size:14px;">&#9654;</span>
+        <span class="btn-action ghost" style="font-size:14px;">&#9654;&#9654;</span>
+        <div class="timeline-time">08:30:00</div>
+        <div class="timeline-scrubber">
+          <div class="timeline-progress"></div>
+          <div class="timeline-handle"></div>
+        </div>
+        <div class="timeline-time">09:00:00</div>
+        <select class="form-control" style="width:70px;font-size:10px;"><option>1x</option><option>2x</option><option>4x</option><option>8x</option><option>0.5x</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- VCA / Analytics -->
+  <div class="sub-content" id="s3-content-2">
+    <div class="sidebar-layout">
+      <div class="sidebar" style="width:220px;">
+        <div style="padding:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-secondary);">VCA TYPE GROUPS</div>
+        <div style="padding:4px;">
+          <div class="tree-node parent"><span class="node-icon">&#128065;</span> Loitering (12 cams)</div>
+          <div class="tree-node parent"><span class="node-icon">&#9200;</span> Dwell Time (8 cams)</div>
+          <div class="tree-node parent"><span class="node-icon">&#128188;</span> Abandoned Object (6 cams)</div>
+          <div class="tree-node parent"><span class="node-icon">&#128663;</span> ANPR (4 cams)</div>
+          <div class="tree-node parent"><span class="node-icon">&#128683;</span> Intrusion (10 cams)</div>
+        </div>
+        <div style="padding:8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:8px;">APPEARANCE SEARCH</div>
+        <div style="padding:8px;">
+          <div style="border:2px dashed var(--border-light);border-radius:6px;padding:16px;text-align:center;color:var(--text-muted);font-size:10px;margin-bottom:8px;">Upload Image<br>&#128247;</div>
+          <select class="form-control mb-8" style="font-size:10px;"><option>All Cameras</option><option>ED Cameras</option><option>Car Park Cameras</option></select>
+          <div class="form-row"><input type="date" class="form-control" value="2026-03-19" style="font-size:10px;"><input type="time" class="form-control" value="06:00" style="font-size:10px;"></div>
+          <span class="btn-action primary w-full mt-8">Search</span>
+        </div>
+      </div>
+      <div class="sidebar-content">
+        <div class="panel mb-12">
+          <div class="panel-header">AI Bounding Box Overlay — CAM-0140 Car Park A Entry</div>
+          <div class="camera-tile cam-gradient-1" style="aspect-ratio:16/9;max-height:300px;">
+            <div class="cam-label">CAM-0140 Car Park A — VCA Active</div>
+            <div class="cam-rec"></div>
+            <!-- Bounding box placeholder -->
+            <div style="position:absolute;top:30%;left:25%;width:15%;height:35%;border:2px solid var(--success);border-radius:2px;">
+              <div style="position:absolute;top:-16px;left:0;background:var(--success);color:#fff;font-size:8px;padding:1px 4px;border-radius:2px;">Person 87%</div>
+            </div>
+            <div style="position:absolute;top:40%;left:55%;width:20%;height:25%;border:2px solid var(--warning);border-radius:2px;">
+              <div style="position:absolute;top:-16px;left:0;background:var(--warning);color:#1a1d23;font-size:8px;padding:1px 4px;border-radius:2px;">Loitering 2:34</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Analytics Event Feed <span style="font-size:10px;color:var(--text-muted);font-weight:400;">Last 30 minutes</span></div>
+          <div class="panel-body" style="max-height:200px;overflow-y:auto;">
+            <table class="alarm-table">
+              <thead><tr><th>Time</th><th>Camera</th><th>VCA Type</th><th>Confidence</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr class="warning-row"><td>08:36:10</td><td>CAM-0140 Car Park A</td><td>Loitering</td><td>92%</td><td><span class="badge warning">Alarm</span></td></tr>
+                <tr><td>08:34:22</td><td>CAM-0155 Loading Dock</td><td>Intrusion</td><td>78%</td><td><span class="badge info">Cleared</span></td></tr>
+                <tr><td>08:30:15</td><td>CAM-0101 ED Entry</td><td>Dwell Time</td><td>85%</td><td><span class="badge info">Cleared</span></td></tr>
+                <tr><td>08:28:44</td><td>CAM-0143 Car Park B Exit</td><td>ANPR</td><td>99%</td><td><span class="badge success">Match</span></td></tr>
+                <tr><td>08:22:11</td><td>CAM-0160 Pharmacy</td><td>Abandoned Object</td><td>71%</td><td><span class="badge info">Cleared</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANPR -->
+  <div class="sub-content" id="s3-content-3">
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:2;">
+        <div class="panel" style="flex:1;">
+          <div class="panel-header">Vehicle Event List <span class="btn-action ghost" style="margin-left:auto;">Export</span></div>
+          <div class="panel-body" style="overflow-y:auto;max-height:calc(100vh - 280px);">
+            <table class="alarm-table">
+              <thead><tr><th>Timestamp</th><th>Plate Number</th><th>Camera</th><th>Direction</th><th>List Status</th><th>Confidence</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr class="critical-row"><td>08:35:02</td><td style="font-weight:700;font-family:monospace;font-size:13px;">ABC-123</td><td>CAM-0155 Loading Dock</td><td>Entry</td><td><span class="badge critical">Blacklist</span></td><td>98%</td><td><span class="btn-action danger">Alert</span></td></tr>
+                <tr><td>08:32:44</td><td style="font-family:monospace;font-size:13px;">XYZ-789</td><td>CAM-0140 Car Park A</td><td>Entry</td><td><span class="badge success">Whitelist</span></td><td>99%</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td>08:28:15</td><td style="font-family:monospace;font-size:13px;">DEF-456</td><td>CAM-0141 Car Park A</td><td>Exit</td><td><span class="badge info">Unknown</span></td><td>95%</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td>08:25:33</td><td style="font-family:monospace;font-size:13px;">GHI-012</td><td>CAM-0143 Car Park B</td><td>Entry</td><td><span class="badge success">Whitelist</span></td><td>97%</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td>08:20:08</td><td style="font-family:monospace;font-size:13px;">JKL-345</td><td>CAM-0155 Loading Dock</td><td>Entry</td><td><span class="badge success">Whitelist</span></td><td>99%</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td>08:15:55</td><td style="font-family:monospace;font-size:13px;">MNO-678</td><td>CAM-0140 Car Park A</td><td>Exit</td><td><span class="badge info">Unknown</span></td><td>91%</td><td><span class="btn-action ghost">View</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="panel mb-12">
+          <div class="panel-header">List Management</div>
+          <div class="panel-body">
+            <div class="form-group"><label class="form-label">Add Plate to List</label><input type="text" class="form-control" placeholder="Enter plate number..."></div>
+            <div class="form-group">
+              <label class="form-label">List Type</label>
+              <select class="form-control"><option>Whitelist</option><option>Blacklist</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" placeholder="Reason / vehicle details"></div>
+            <span class="btn-action primary w-full">Add to List</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Boom Barrier Control</div>
+          <div class="panel-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;">Car Park A Entry</span>
+              <div style="display:flex;gap:4px;"><span class="btn-action success">Open</span><span class="btn-action danger">Close</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;">Car Park A Exit</span>
+              <div style="display:flex;gap:4px;"><span class="btn-action success">Open</span><span class="btn-action danger">Close</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;">Car Park B Entry</span>
+              <div style="display:flex;gap:4px;"><span class="btn-action success">Open</span><span class="btn-action danger">Close</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+              <span style="font-size:12px;">Loading Dock Gate</span>
+              <div style="display:flex;gap:4px;"><span class="btn-action success">Open</span><span class="btn-action danger">Close</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BWC Management -->
+  <div class="sub-content" id="s3-content-4">
+    <div class="sidebar-layout">
+      <div class="sidebar" style="width:300px;">
+        <div style="padding:8px;border-bottom:1px solid var(--border);">
+          <input type="text" class="form-control" placeholder="Search by operator name or date..." style="font-size:11px;">
+        </div>
+        <div style="padding:8px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text-secondary);">BWC INVENTORY</div>
+        <div style="overflow-y:auto;">
+          <table class="alarm-table" style="font-size:10px;">
+            <thead><tr><th>BWC ID</th><th>Assigned To</th><th>Last Sync</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr style="background:var(--success-bg);cursor:pointer;"><td>BWC-001</td><td>M. Roberts (G-101)</td><td>08:40</td><td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;"></span> Recording</td></tr>
+              <tr style="cursor:pointer;"><td>BWC-002</td><td>D. Nguyen (G-102)</td><td>08:38</td><td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;"></span> Standby</td></tr>
+              <tr style="cursor:pointer;"><td>BWC-003</td><td>S. Patel (G-103)</td><td>07:15</td><td><span class="int-dot offline" style="display:inline-block;width:6px;height:6px;"></span> Offline</td></tr>
+              <tr style="cursor:pointer;"><td>BWC-004</td><td>T. Brown (G-104)</td><td>08:35</td><td><span class="int-dot online" style="display:inline-block;width:6px;height:6px;"></span> Standby</td></tr>
+              <tr style="cursor:pointer;"><td>BWC-005</td><td>Unassigned</td><td>—</td><td><span class="int-dot degraded" style="display:inline-block;width:6px;height:6px;"></span> Docked</td></tr>
+              <tr style="cursor:pointer;"><td>BWC-006</td><td>Unassigned</td><td>—</td><td><span class="int-dot degraded" style="display:inline-block;width:6px;height:6px;"></span> Docked</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:8px;border-top:1px solid var(--border);">
+          <div class="form-label">Assign BWC to Shift</div>
+          <select class="form-control mb-8" style="font-size:10px;"><option>BWC-005</option><option>BWC-006</option></select>
+          <select class="form-control mb-8" style="font-size:10px;"><option>Select Officer...</option><option>G-105 R. Lee</option><option>G-106 K. Wilson</option></select>
+          <span class="btn-action primary w-full">Assign</span>
+        </div>
+      </div>
+      <div class="sidebar-content">
+        <div class="panel mb-12">
+          <div class="panel-header">BWC-001 Playback — M. Roberts (G-101)
+            <div style="display:flex;gap:4px;">
+              <span class="btn-action ghost">Export</span>
+              <span class="btn-action ghost">Retain</span>
+              <span class="badge success" style="margin-left:8px;">Video Available</span>
+            </div>
+          </div>
+          <div class="camera-tile cam-gradient-1" style="aspect-ratio:16/9;max-height:350px;">
+            <div class="cam-label">BWC-001 — M. Roberts — Live Recording</div>
+            <div class="cam-rec"></div>
+            <div class="cam-osd">REC | 2026-03-19 08:42:17 | Battery: 78%</div>
+          </div>
+        </div>
+        <div class="timeline-bar">
+          <span class="btn-action ghost">&#9654;</span>
+          <div class="timeline-time">08:00:00</div>
+          <div class="timeline-scrubber"><div class="timeline-progress" style="width:65%;"></div><div class="timeline-handle" style="left:65%;"></div></div>
+          <div class="timeline-time">08:42:17</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Wall Control -->
+  <div class="sub-content" id="s3-content-5">
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="width:250px;" class="panel">
+        <div class="panel-header">Layout Presets</div>
+        <div class="panel-body">
+          <div class="call-item" style="margin-bottom:4px;"><span>1 Camera (Full)</span></div>
+          <div class="call-item" style="margin-bottom:4px;border-color:var(--accent);"><span style="color:var(--accent);">2x2 (4 Cameras)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>3x3 (9 Cameras)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>4x4 (16 Cameras)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>5x5 (25 Cameras)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>10x10 (100 Cameras)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>1+5 (Spotlight)</span></div>
+          <div class="call-item"><span>Custom Layout...</span></div>
+        </div>
+        <div class="panel-header">Physical Screens</div>
+        <div class="panel-body">
+          <div class="call-item" style="margin-bottom:4px;border-color:var(--accent);"><span style="color:var(--accent);">Screen 1 (Left)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>Screen 2 (Center-L)</span></div>
+          <div class="call-item" style="margin-bottom:4px;"><span>Screen 3 (Center-R)</span></div>
+          <div class="call-item"><span>Screen 4 (Right)</span></div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="panel-header" style="background:var(--bg-panel-alt);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;">Video Wall Preview — Screen 1 (2x2 Layout)
+          <div style="display:flex;gap:4px;"><span class="btn-action primary">Apply</span><span class="btn-action ghost">Save Preset</span></div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:0 0 6px 6px;padding:8px;background:var(--bg-panel);">
+          <div class="camera-grid g2x2">
+            <div class="camera-tile cam-gradient-1" style="aspect-ratio:16/9;"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div style="position:absolute;bottom:8px;right:8px;font-size:9px;color:rgba(255,255,255,0.4);">Drag camera here</div></div>
+            <div class="camera-tile cam-gradient-3" style="aspect-ratio:16/9;"><div class="cam-label">CAM-0155 Loading Dock</div><div class="cam-rec"></div></div>
+            <div class="camera-tile cam-gradient-5" style="aspect-ratio:16/9;"><div class="cam-label">CAM-0170 Helipad</div><div class="cam-rec"></div></div>
+            <div class="camera-tile cam-gradient-2" style="aspect-ratio:16/9;"><div class="cam-label">CAM-0140 Car Park A</div><div class="cam-rec"></div></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:12px;">
+          <div class="panel" style="flex:1;">
+            <div class="panel-header">Combined Multi-Screen Layout</div>
+            <div class="panel-body" style="display:flex;gap:4px;">
+              <div style="flex:1;aspect-ratio:16/9;background:var(--bg-input);border:1px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent);">Screen 1<br>2x2</div>
+              <div style="flex:1;aspect-ratio:16/9;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">Screen 2<br>Alarms</div>
+              <div style="flex:1;aspect-ratio:16/9;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">Screen 3<br>4x4</div>
+              <div style="flex:1;aspect-ratio:16/9;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">Screen 4<br>Dashboard</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- SCREEN 4: Admin & Configuration -->
+<!-- ============================== -->
+<div class="screen-panel" id="s4-panel">
+  <div class="sub-tabs">
+    <label for="s4-tab-0" class="sub-tab">Dashboard</label>
+    <label for="s4-tab-1" class="sub-tab">Access Control (Inner Range)</label>
+    <label for="s4-tab-2" class="sub-tab">Reports &amp; Export</label>
+    <label for="s4-tab-3" class="sub-tab">SOP &amp; Document Library</label>
+    <label for="s4-tab-4" class="sub-tab">User &amp; Configuration</label>
+    <label for="s4-tab-5" class="sub-tab">Events Monitor (Inner Range)</label>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="sub-content" id="s4-content-0" style="overflow-y:auto;">
+    <div class="dash-grid mb-12">
+      <div class="dash-card">
+        <div class="dash-card-title">Active Critical Alarms</div>
+        <div class="dash-metric bad">6</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">4 unacknowledged</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Low Priority Alarms</div>
+        <div class="dash-metric warn">4</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">2 unacknowledged</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Cameras Online</div>
+        <div class="dash-metric good">141 <span style="font-size:14px;color:var(--text-muted);">/ 142</span></div>
+        <div style="font-size:11px;color:var(--critical);margin-top:4px;">1 offline: CAM-0142</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Unanswered Calls</div>
+        <div class="dash-metric warn">1</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Main Entry Station</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Active Incidents</div>
+        <div class="dash-metric" style="color:var(--accent);">3</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Avg response: 28s</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Guards on Duty</div>
+        <div class="dash-metric good">4</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">3 BWC active, 1 offline</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <div class="panel" style="flex:1;">
+        <div class="panel-header">Integration Status</div>
+        <div class="panel-body">
+          <div class="integration-row"><span>Milestone XProtect (VMS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Inner Range Integrity (EACS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Ascom (MDAS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Jacques (ICS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Irisity (VCA)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Trane IQ Vision (FMS)</span><div class="int-status"><span class="int-dot degraded"></span><span style="color:var(--degraded);font-size:11px;">Degraded</span></div></div>
+          <div class="integration-row"><span>Petronics (FAS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Axon (BWC)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+        </div>
+      </div>
+      <div class="panel" style="flex:1;">
+        <div class="panel-header">Server Status</div>
+        <div class="panel-body">
+          <div class="integration-row"><span>ECC Primary Server</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Active</span></div></div>
+          <div class="integration-row"><span>ECC Failover Server</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Standby</span></div></div>
+          <div class="integration-row"><span>Milestone Recording (NAS)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">78% Used</span></div></div>
+          <div class="integration-row"><span>Milestone Recording (SAN)</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">45% Used</span></div></div>
+          <div class="integration-row"><span>Inner Range Controller 1</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+          <div class="integration-row"><span>Inner Range Controller 2</span><div class="int-status"><span class="int-dot online"></span><span style="color:var(--success);font-size:11px;">Online</span></div></div>
+        </div>
+        <div class="panel-header">IAZ Status</div>
+        <div class="panel-body">
+          <div class="integration-row"><span>Pharmacy IAZ</span><div class="int-status"><span class="int-dot" style="background:var(--critical);"></span><span class="text-critical" style="font-size:11px;">ALARM</span></div></div>
+          <div class="integration-row"><span>Drug Store IAZ</span><div class="int-status"><span class="int-dot online"></span><span style="font-size:11px;color:var(--success);">Armed</span></div></div>
+          <div class="integration-row"><span>Server Room IAZ</span><div class="int-status"><span class="int-dot online"></span><span style="font-size:11px;color:var(--success);">Armed</span></div></div>
+          <div class="integration-row"><span>Records IAZ</span><div class="int-status"><span class="int-dot degraded"></span><span style="font-size:11px;color:var(--degraded);">Disarmed</span></div></div>
+        </div>
+        <div class="panel-header">Lockdown Groups</div>
+        <div class="panel-body">
+          <div class="integration-row"><span>Soft Lockdown — Perimeter</span><div class="int-status"><span class="int-dot online"></span><span style="font-size:11px;color:var(--success);">Ready</span></div></div>
+          <div class="integration-row"><span>Hard Lockdown — Full Facility</span><div class="int-status"><span class="int-dot online"></span><span style="font-size:11px;color:var(--success);">Ready</span></div></div>
+        </div>
+      </div>
+      <div class="panel" style="flex:1;">
+        <div class="panel-header">Operator Performance — Today</div>
+        <div class="panel-body">
+          <div class="integration-row"><span>J. Mitchell (Current)</span><div style="text-align:right;font-size:11px;"><div>Alarms: <strong>14</strong></div><div>Avg Response: <strong style="color:var(--success);">24s</strong></div></div></div>
+          <div class="integration-row"><span>P. Chen (Night)</span><div style="text-align:right;font-size:11px;"><div>Alarms: <strong>8</strong></div><div>Avg Response: <strong style="color:var(--success);">31s</strong></div></div></div>
+          <div class="integration-row"><span>R. Lee (Afternoon)</span><div style="text-align:right;font-size:11px;"><div>Alarms: <strong>—</strong></div><div>Shift starts: 14:00</div></div></div>
+        </div>
+        <div class="panel-header">Camera Status Summary</div>
+        <div class="panel-body">
+          <div style="font-size:12px;margin-bottom:6px;"><span style="color:var(--success);font-weight:700;">141</span> Online &nbsp;&bull;&nbsp; <span style="color:var(--critical);font-weight:700;">1</span> Offline</div>
+          <div style="font-size:11px;color:var(--text-muted);border-left:3px solid var(--critical);padding-left:8px;">
+            CAM-0142 (Car Park B) — Last seen 08:24:55 — Connection timeout
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Access Control -->
+  <div class="sub-content" id="s4-content-1">
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;">
+        <div class="panel mb-12">
+          <div class="panel-header">Cardholder Search</div>
+          <div class="panel-body">
+            <div class="form-row">
+              <div class="form-group"><input type="text" class="form-control" placeholder="Search by name..."></div>
+              <div class="form-group"><input type="text" class="form-control" placeholder="Card number..."></div>
+              <div style="padding-top:16px;"><span class="btn-action primary">Search</span></div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:8px;padding:10px;background:var(--bg-panel-alt);border-radius:6px;">
+              <div style="width:80px;height:100px;background:var(--bg-input);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--text-muted);">&#128100;</div>
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:14px;color:var(--text-primary);">Dr. Sarah Williams</div>
+                <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Card: 10045872 &bull; Staff ID: S-2841</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Department: Emergency &bull; Role: Senior Registrar</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Access Level: Level 3 — Clinical Areas</div>
+                <div style="margin-top:6px;display:flex;gap:4px;">
+                  <span class="badge success">Active</span>
+                  <span class="badge info">Photo ID Verified</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <span class="btn-action primary">Grant Temp Access</span>
+                <span class="btn-action danger">Revoke Access</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel mb-12">
+          <div class="panel-header">Temporary Access Grant</div>
+          <div class="panel-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Area</label><select class="form-control"><option>Pharmacy</option><option>Theatre Complex</option><option>Server Room</option><option>Records</option></select></div>
+              <div class="form-group"><label class="form-label">Start Date/Time</label><input type="datetime-local" class="form-control" value="2026-03-19T08:00"></div>
+              <div class="form-group"><label class="form-label">End Date/Time</label><input type="datetime-local" class="form-control" value="2026-03-19T18:00"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" placeholder="Reason for temporary access..."></div>
+            <span class="btn-action primary">Grant Access</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="panel mb-12">
+          <div class="panel-header">Door List &amp; Control
+            <div style="display:flex;gap:4px;"><span class="btn-action ghost">Schedules</span></div>
+          </div>
+          <div class="panel-body" style="max-height:200px;overflow-y:auto;">
+            <div class="door-row"><span><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:6px;"></span>Door-ED-01 Main ED Entry</span><div><span class="text-muted" style="font-size:10px;margin-right:8px;">Last: S.Williams 08:38</span><span class="btn-action ghost">Unlock</span></div></div>
+            <div class="door-row"><span><span class="int-dot" style="display:inline-block;width:6px;height:6px;margin-right:6px;background:var(--critical);"></span>Door-TH-03 Theatre 3</span><div><span class="text-critical" style="font-size:10px;margin-right:8px;">FORCED</span><span class="btn-action ghost">Unlock</span></div></div>
+            <div class="door-row"><span><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:6px;"></span>Door-PH-01 Pharmacy Main</span><div><span class="text-muted" style="font-size:10px;margin-right:8px;">Last: D.Kim 08:22</span><span class="btn-action ghost">Unlock</span></div></div>
+            <div class="door-row"><span><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:6px;"></span>Door-WD4A-01 Ward 4A</span><div><span class="text-muted" style="font-size:10px;margin-right:8px;">Last: J.Chen 08:40</span><span class="btn-action ghost">Unlock</span></div></div>
+            <div class="door-row"><span><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:6px;"></span>Door-WD4B-01 Ward 4B</span><div><span class="text-muted" style="font-size:10px;margin-right:8px;">Last: J.Thompson 08:39</span><span class="btn-action ghost">Unlock</span></div></div>
+            <div class="door-row"><span><span class="int-dot online" style="display:inline-block;width:6px;height:6px;margin-right:6px;"></span>Door-LD-01 Loading Dock</span><div><span class="text-muted" style="font-size:10px;margin-right:8px;">Last: M.Brown 08:15</span><span class="btn-action ghost">Unlock</span></div></div>
+          </div>
+        </div>
+        <div class="panel mb-12">
+          <div class="panel-header critical">Lockdown Groups</div>
+          <div class="panel-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-panel-alt);border-radius:4px;margin-bottom:8px;">
+              <div><div style="font-weight:700;color:var(--text-primary);">Soft Lockdown — Perimeter</div><div style="font-size:10px;color:var(--text-muted);">Restricts external entry points. Internal doors remain open.</div></div>
+              <span class="btn-action danger">Activate</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-panel-alt);border-radius:4px;">
+              <div><div style="font-weight:700;color:var(--text-primary);">Hard Lockdown — Full Facility</div><div style="font-size:10px;color:var(--text-muted);">All doors locked. Emergency exits only. Code Black.</div></div>
+              <span class="btn-action danger">Activate</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Lift Management (OTIS)</div>
+          <div class="panel-body">
+            <div class="integration-row"><span>Lift A — Main Building</span><div><span class="badge success">Normal</span></div></div>
+            <div class="integration-row"><span>Lift B — Main Building</span><div><span class="badge success">Normal</span></div></div>
+            <div class="integration-row"><span>Lift C — Theatre Wing</span><div><span class="badge warning">Restricted Hours</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports -->
+  <div class="sub-content" id="s4-content-2">
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:2;">
+        <div class="panel">
+          <div class="panel-header">Report Builder</div>
+          <div class="panel-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Report Type</label>
+                <select class="form-control">
+                  <option>Alarm History Report</option>
+                  <option>Incident History Report</option>
+                  <option>Access Events Report</option>
+                  <option>Camera Events Report</option>
+                  <option>VCA Events Report</option>
+                  <option>BWC Mapping Report</option>
+                  <option>MDAS Events Report</option>
+                  <option>Intercom Events Report</option>
+                  <option>Fire Events Report</option>
+                  <option>Fridge Monitoring Report</option>
+                  <option>Operator Performance Report</option>
+                  <option>Door Access Audit Report</option>
+                  <option>Cardholder Trail Report</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Date Range Start</label><input type="datetime-local" class="form-control" value="2026-03-19T00:00"></div>
+              <div class="form-group"><label class="form-label">Date Range End</label><input type="datetime-local" class="form-control" value="2026-03-19T23:59"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Source System</label><select class="form-control"><option>All</option><option>Inner Range</option><option>Milestone</option><option>Ascom</option><option>Jacques</option><option>Irisity</option><option>Trane</option><option>Petronics</option><option>Axon</option></select></div>
+              <div class="form-group"><label class="form-label">Location</label><select class="form-control"><option>All Locations</option><option>Emergency Dept</option><option>Wards</option><option>Theatre</option><option>Car Park</option><option>Loading Dock</option><option>Pharmacy</option></select></div>
+              <div class="form-group"><label class="form-label">Operator</label><select class="form-control"><option>All Operators</option><option>J. Mitchell</option><option>P. Chen</option><option>R. Lee</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Export Format</label><select class="form-control"><option>PDF</option><option>CSV</option></select></div>
+              <div style="padding-top:16px;display:flex;gap:8px;">
+                <span class="btn-action primary">Generate Report</span>
+                <span class="btn-action ghost">Preview</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="panel">
+          <div class="panel-header">Scheduled Exports</div>
+          <div class="panel-body">
+            <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+              <div style="font-weight:600;color:var(--text-primary);">Daily Alarm Summary</div>
+              <div style="color:var(--text-muted);font-size:10px;">Every day @ 06:00 &bull; PDF &bull; security@hospital.org</div>
+            </div>
+            <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+              <div style="font-weight:600;color:var(--text-primary);">Weekly Incident Report</div>
+              <div style="color:var(--text-muted);font-size:10px;">Monday @ 08:00 &bull; PDF &bull; management@hospital.org</div>
+            </div>
+            <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+              <div style="font-weight:600;color:var(--text-primary);">Monthly Access Audit</div>
+              <div style="color:var(--text-muted);font-size:10px;">1st of month @ 08:00 &bull; CSV &bull; compliance@hospital.org</div>
+            </div>
+            <div style="padding:6px 0;font-size:11px;">
+              <div style="font-weight:600;color:var(--text-primary);">BWC Assignment Log</div>
+              <div style="color:var(--text-muted);font-size:10px;">Daily @ 22:00 &bull; PDF &bull; security@hospital.org</div>
+            </div>
+            <span class="btn-action ghost w-full mt-8">+ Add Scheduled Export</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOP & Document Library -->
+  <div class="sub-content" id="s4-content-3">
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;">
+        <div class="panel">
+          <div class="panel-header">Document Library <span class="btn-action primary" style="margin-left:auto;">Upload New Version</span></div>
+          <div class="panel-body">
+            <table class="alarm-table">
+              <thead><tr><th>Document</th><th>Type</th><th>Version</th><th>Last Updated</th><th>Updated By</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600;">SOP-001 Duress Response</td><td><span class="badge critical">SOP</span></td><td>v3.2</td><td>2026-02-15</td><td>Admin</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">SOP-002 Fire Evacuation</td><td><span class="badge critical">SOP</span></td><td>v2.8</td><td>2026-01-20</td><td>Admin</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">SOP-003 Code Black (Lockdown)</td><td><span class="badge critical">SOP</span></td><td>v4.0</td><td>2026-03-01</td><td>Admin</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">SOP-004 Missing Patient</td><td><span class="badge warning">SOP</span></td><td>v2.1</td><td>2025-12-10</td><td>Admin</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">SOP-005 Security Breach</td><td><span class="badge critical">SOP</span></td><td>v3.0</td><td>2026-02-28</td><td>Admin</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">Guard Patrol Schedule — March 2026</td><td><span class="badge info">Schedule</span></td><td>v1.0</td><td>2026-03-01</td><td>J. Mitchell</td><td><span class="btn-action ghost">View</span></td></tr>
+                <tr><td style="font-weight:600;">ECC System Architecture Diagram</td><td><span class="badge info">Reference</span></td><td>v2.0</td><td>2026-01-15</td><td>Tech</td><td><span class="btn-action ghost">View</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="iframe-placeholder" style="min-height:400px;">
+          <div class="big-icon">&#128196;</div>
+          <div style="font-size:14px;font-weight:600;">PDF Viewer</div>
+          <div style="font-size:11px;">Select a document to preview</div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;">
+          <span class="btn-action ghost">Export SOP by Incident Type</span>
+          <span class="btn-action ghost">Print</span>
+          <span class="btn-action ghost">Version History</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User & Configuration -->
+  <div class="sub-content" id="s4-content-4">
+    <div style="display:flex;gap:12px;flex:1;overflow-y:auto;">
+      <div style="flex:1;">
+        <div class="panel mb-12">
+          <div class="panel-header">User Access Management</div>
+          <div class="panel-body">
+            <table class="alarm-table">
+              <thead><tr><th>User</th><th>Role</th><th>Location Access</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>J. Mitchell</td><td>ESS PSIM Operator</td><td>All Locations</td><td><span class="badge success">Active</span></td><td><span class="btn-action ghost">Edit</span></td></tr>
+                <tr><td>P. Chen</td><td>ESS PSIM Operator</td><td>All Locations</td><td><span class="badge success">Active</span></td><td><span class="btn-action ghost">Edit</span></td></tr>
+                <tr><td>R. Lee</td><td>ESS PSIM Operator</td><td>All Locations</td><td><span class="badge success">Active</span></td><td><span class="btn-action ghost">Edit</span></td></tr>
+                <tr><td>Admin.Security</td><td>ESS PSIM Administrator</td><td>All Locations</td><td><span class="badge success">Active</span></td><td><span class="btn-action ghost">Edit</span></td></tr>
+                <tr><td>Tech.Support</td><td>Tech</td><td>Configuration Only</td><td><span class="badge success">Active</span></td><td><span class="btn-action ghost">Edit</span></td></tr>
+              </tbody>
+            </table>
+            <span class="btn-action primary mt-8">+ Add User</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Auto-Logout Settings</div>
+          <div class="panel-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">SOC Workstation</label><select class="form-control"><option>Never (24/7 Operation)</option><option>After 30 min inactivity</option></select></div>
+              <div class="form-group"><label class="form-label">Admin Terminal</label><select class="form-control"><option>After 15 min inactivity</option><option>After 30 min inactivity</option></select></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="panel mb-12">
+          <div class="panel-header">Alarm Configuration</div>
+          <div class="panel-body">
+            <div class="form-row mb-8">
+              <div class="form-group"><label class="form-label">Priority Levels</label>
+                <div style="font-size:11px;">
+                  <div style="padding:3px 0;"><span style="display:inline-block;width:12px;height:12px;background:var(--critical);border-radius:2px;vertical-align:middle;margin-right:6px;"></span> P1 — Critical (Immediate Response)</div>
+                  <div style="padding:3px 0;"><span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:2px;vertical-align:middle;margin-right:6px;"></span> P2 — High (< 2 min Response)</div>
+                  <div style="padding:3px 0;"><span style="display:inline-block;width:12px;height:12px;background:var(--warning);border-radius:2px;vertical-align:middle;margin-right:6px;"></span> P3 — Medium (Advisory)</div>
+                  <div style="padding:3px 0;"><span style="display:inline-block;width:12px;height:12px;background:#6b7280;border-radius:2px;vertical-align:middle;margin-right:6px;"></span> P4 — Low (Information)</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Acknowledgment Rules</label><select class="form-control"><option>P1-P2: Manual ACK required within 60s</option></select></div>
+            <div class="form-group"><label class="form-label">Suppression Window</label><input type="number" class="form-control" value="30" style="width:100px;display:inline-block;"> <span style="font-size:11px;color:var(--text-muted);">seconds (duplicate suppression)</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Integration Settings</div>
+          <div class="panel-body" style="font-size:11px;">
+            <div class="integration-row"><span>Milestone XProtect</span><span class="text-muted">142 cameras mapped</span></div>
+            <div class="integration-row"><span>Inner Range Integrity</span><span class="text-muted">86 doors, 4 IAZ zones</span></div>
+            <div class="integration-row"><span>Jacques ICS</span><span class="text-muted">8 stations configured</span></div>
+            <div class="integration-row"><span>Dashboard Layout</span><span class="text-muted">Per workstation config</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events Monitor -->
+  <div class="sub-content" id="s4-content-5">
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+      <input type="text" class="form-control" placeholder="Filter events by keyword..." style="max-width:300px;">
+      <span class="btn-action ghost">Clear</span>
+      <div style="flex:1;"></div>
+      <span style="font-size:10px;color:var(--text-muted);">Live Stream &bull; Inner Range Integrity</span>
+      <span class="int-dot online" style="display:inline-block;width:8px;height:8px;"></span>
+    </div>
+    <div class="panel" style="flex:1;">
+      <div class="panel-body" style="max-height:calc(100vh - 240px);overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.8;">
+        <div style="color:var(--critical);">08:41:32 | ALARM   | Fixed Duress Activated | Location: ED Level 2 | Zone: ED-DUR-01</div>
+        <div style="color:var(--critical);">08:40:55 | ALARM   | MDAS Duress Received | Badge: 1842 | Location: Ward 4B</div>
+        <div style="color:var(--warning);">08:39:21 | ALARM   | Intrusion Alarm | Location: Pharmacy IAZ | Zone: PH-IAZ-01</div>
+        <div style="color:var(--critical);">08:38:17 | ALARM   | Door Forced Open | Door: TH-03 | Location: Theatre Corridor</div>
+        <div style="color:var(--critical);">08:37:44 | ALARM   | Fire Alarm Zone 12 | Panel: Petronics-01 | Location: Kitchen</div>
+        <div style="color:var(--text-secondary);">08:37:02 | ACCESS  | Card Presented | Card: 10045872 | Door: ED-01 | Result: GRANTED</div>
+        <div style="color:var(--text-secondary);">08:36:44 | ACCESS  | Card Presented | Card: 10038291 | Door: WD4A-01 | Result: GRANTED</div>
+        <div style="color:var(--warning);">08:36:10 | EVENT   | VCA Alert Received | Type: Loitering | Camera: CAM-0140</div>
+        <div style="color:var(--text-secondary);">08:35:55 | ACCESS  | Card Presented | Card: 10052103 | Door: PH-01 | Result: GRANTED</div>
+        <div style="color:var(--warning);">08:35:02 | EVENT   | ANPR Blacklist Match | Plate: ABC-123 | Camera: CAM-0155</div>
+        <div style="color:var(--text-secondary);">08:34:28 | STATUS  | Controller Heartbeat | Controller: IR-CTRL-01 | Status: OK</div>
+        <div style="color:var(--text-secondary);">08:34:28 | STATUS  | Controller Heartbeat | Controller: IR-CTRL-02 | Status: OK</div>
+        <div style="color:var(--text-secondary);">08:33:45 | EVENT   | ICS Call Unanswered | Station: Main Entry | Rings: 3</div>
+        <div style="color:var(--text-secondary);">08:33:10 | ACCESS  | Card Presented | Card: 10041567 | Door: LD-01 | Result: GRANTED</div>
+        <div style="color:var(--text-secondary);">08:32:44 | ACCESS  | Card Presented | Card: 10039988 | Door: WD4B-01 | Result: GRANTED</div>
+        <div style="color:var(--text-muted);">08:32:00 | STATUS  | IAZ Zone Status | Zone: PH-IAZ-01 | Status: ARMED</div>
+        <div style="color:var(--text-muted);">08:31:30 | STATUS  | IAZ Zone Status | Zone: DR-IAZ-01 | Status: ARMED</div>
+        <div style="color:var(--text-secondary);">08:30:22 | ACCESS  | Card Presented | Card: 10045872 | Door: TH-01 | Result: GRANTED</div>
+        <div style="color:var(--text-muted);">08:30:00 | STATUS  | System Heartbeat | All Controllers OK | Uptime: 14d 6h 22m</div>
+        <div style="color:var(--warning);">08:25:18 | FAULT   | Camera Offline | Camera: CAM-0142 | Reason: Connection Timeout</div>
+        <div style="color:var(--text-secondary);">08:24:55 | STATUS  | Camera Last Frame | Camera: CAM-0142 | Final frame received</div>
+        <div style="color:var(--text-secondary);">08:22:50 | ACCESS  | Card Presented | Card: 10048321 | Door: ED-01 | Result: DENIED (Expired)</div>
+        <div style="color:var(--text-secondary);">08:20:15 | ACCESS  | Card Presented | Card: 10050012 | Door: WD4A-01 | Result: GRANTED</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main-content -->
+
+<!-- ===== STATUS BAR ===== -->
+<div class="status-bar">
+  <div class="status-bar-left">
+    <div class="status-item"><span class="sdot on"></span> Milestone</div>
+    <div class="status-item"><span class="sdot on"></span> Inner Range</div>
+    <div class="status-item"><span class="sdot on"></span> Ascom</div>
+    <div class="status-item"><span class="sdot on"></span> Jacques</div>
+    <div class="status-item"><span class="sdot on"></span> Irisity</div>
+    <div class="status-item"><span class="sdot deg"></span> Trane</div>
+    <div class="status-item"><span class="sdot on"></span> Petronics</div>
+    <div class="status-item"><span class="sdot on"></span> Axon</div>
+  </div>
+  <div class="alarm-count-bar">
+    <span class="crit-count">Critical: 6</span>
+    <span class="low-count">Low Priority: 4</span>
+    <span class="total-count">Total Active: 10</span>
+  </div>
+  <div class="status-bar-right">
+    <div class="status-item">Shift: Day (06:00–14:00)</div>
+    <div class="status-item">Operator: J. Mitchell</div>
+    <div class="status-item"><span class="sdot on"></span> System Online</div>
+  </div>
+</div>
+
+<!-- ===== ALARM POP-UP OVERLAY ===== -->
+<div class="overlay-backdrop" id="alarmPopup">
+  <label for="alarm-popup-toggle" class="overlay-backdrop-label"></label>
+  <div class="overlay-panel" style="max-width:1200px;">
+    <div class="overlay-header" style="border-left:4px solid var(--critical);">
+      <h3 style="color:var(--critical);">&#9888; ALARM DETAIL — ALM-4401 Fixed Duress Level 2 ED</h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="btn-action primary">Acknowledge</span>
+        <span class="btn-action warning">Create Incident</span>
+        <label for="alarm-popup-toggle" class="overlay-close">&times;</label>
+      </div>
+    </div>
+    <div class="overlay-body">
+      <div style="display:flex;gap:16px;margin-bottom:16px;">
+        <div style="flex:1;">
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+            <div><span class="form-label">Alarm ID</span><br><span style="color:var(--critical);font-weight:700;font-size:14px;">ALM-4401</span></div>
+            <div><span class="form-label">Priority</span><br><span class="badge critical">P1 — Critical</span></div>
+            <div><span class="form-label">Source</span><br><span style="color:var(--text-primary);">Inner Range Integrity</span></div>
+            <div><span class="form-label">Location</span><br><span style="color:var(--text-primary);">Emergency Dept — Level 2</span></div>
+            <div><span class="form-label">Timestamp</span><br><span style="color:var(--text-primary);font-variant-numeric:tabular-nums;">19/03/2026 08:41:32</span></div>
+            <div><span class="form-label">Status</span><br><span class="status-badge status-new">New — Unacknowledged</span></div>
+          </div>
+          <div style="padding:10px;background:var(--critical-bg);border:1px solid var(--critical-border);border-radius:6px;margin-bottom:12px;">
+            <div style="font-weight:700;color:var(--critical);font-size:13px;">Fixed Duress Alarm Activated — Emergency Department Level 2</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Duress point ED-DUR-01 activated. Zone: ED Level 2 Nurses Station. Trigger type: Fixed button press.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location on Map (mini) -->
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;">
+          <div class="form-label mb-8">Mapped Camera Feeds</div>
+          <div class="camera-grid g2x3">
+            <div class="camera-tile cam-gradient-1"><div class="cam-label">CAM-0101 ED Entry</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            <div class="camera-tile cam-gradient-2"><div class="cam-label">CAM-0102 ED Corridor</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            <div class="camera-tile cam-gradient-3"><div class="cam-label">CAM-0103 ED Waiting</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            <div class="camera-tile cam-gradient-4"><div class="cam-label">CAM-0104 ED Triage</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            <div class="camera-tile cam-gradient-5"><div class="cam-label">CAM-0115 ED L2 Nurses</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+            <div class="camera-tile cam-gradient-6"><div class="cam-label">CAM-0116 ED L2 Bay</div><div class="cam-rec"></div><div class="cam-status"></div></div>
+          </div>
+        </div>
+        <div style="width:280px;">
+          <div class="form-label mb-8">Location</div>
+          <div style="background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:6px;height:180px;position:relative;overflow:hidden;">
+            <svg viewBox="0 0 280 180" style="width:100%;height:100%;">
+              <rect x="10" y="10" width="260" height="160" rx="3" fill="none" stroke="#2d3240" stroke-width="1.5"/>
+              <rect x="20" y="20" width="100" height="60" rx="2" fill="rgba(255,59,59,0.1)" stroke="var(--critical)" stroke-width="1.5"/>
+              <text x="70" y="55" text-anchor="middle" fill="var(--critical)" font-size="10" font-family="Segoe UI">ED Level 2</text>
+              <circle cx="70" cy="40" r="6" fill="var(--critical)" opacity="0.8">
+                <animate attributeName="r" values="6;10;6" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <rect x="130" y="20" width="80" height="60" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240"/>
+              <text x="170" y="55" text-anchor="middle" fill="#5a6170" font-size="9" font-family="Segoe UI">Theatre</text>
+              <rect x="20" y="90" width="100" height="60" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240"/>
+              <text x="70" y="125" text-anchor="middle" fill="#5a6170" font-size="9" font-family="Segoe UI">Main Entry</text>
+              <rect x="130" y="90" width="130" height="60" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240"/>
+              <text x="195" y="125" text-anchor="middle" fill="#5a6170" font-size="9" font-family="Segoe UI">Admin</text>
+            </svg>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="form-label mb-8">Quick Actions</div>
+            <span class="btn-action primary w-full mb-8" style="padding:8px;display:block;text-align:center;">Acknowledge Alarm</span>
+            <span class="btn-action warning w-full mb-8" style="padding:8px;display:block;text-align:center;">Create Incident</span>
+            <span class="btn-action ghost w-full" style="padding:8px;display:block;text-align:center;">Dispatch Guard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INFO PANEL (Screen Allocation Matrix) ===== -->
+<div class="overlay-backdrop" id="infoPanel">
+  <label for="info-panel-toggle" class="overlay-backdrop-label"></label>
+  <div class="overlay-panel" style="max-width:1000px;">
+    <div class="overlay-header">
+      <h3>Screen Allocation Matrix — ECC PSIM Workstation</h3>
+      <label for="info-panel-toggle" class="overlay-close">&times;</label>
+    </div>
+    <div class="overlay-body">
+      <table class="info-table">
+        <thead>
+          <tr><th>Screen</th><th>Primary Function</th><th>Key Subsystems</th><th>Tabs</th><th>Roles</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;color:var(--accent);">Screen 1</td>
+            <td>Situational Awareness &amp; Communications</td>
+            <td>Maps, Jacques ICS, Trane FMS</td>
+            <td>Floor Plan, Intercom, FMS Dashboard, Quick Launch</td>
+            <td>ESS PSIM Operator, Administrator</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;color:var(--critical);">Screen 2</td>
+            <td>Alarm &amp; Incident Management</td>
+            <td>All alarm sources, Incident workflow</td>
+            <td>Alarm Grid (persistent) + Incident Creation, Detail, History, Correlation</td>
+            <td>ESS PSIM Operator</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;color:var(--success);">Screen 3</td>
+            <td>Video Surveillance &amp; Analytics</td>
+            <td>Milestone, Irisity VCA, Axon BWC</td>
+            <td>Live View, Playback, VCA/Analytics, ANPR, BWC Mgmt, Video Wall</td>
+            <td>ESS PSIM Operator, Administrator</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;color:var(--warning);">Screen 4</td>
+            <td>Administration, Dashboards &amp; Config</td>
+            <td>Inner Range, System Health, Reporting</td>
+            <td>Dashboard, Access Control, Reports, SOP Library, User Config, Events Monitor</td>
+            <td>ESS PSIM Administrator, Tech</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-muted);">
+        <strong>Integrated Subsystems:</strong> Milestone XProtect (VMS) &bull; Inner Range Integrity (EACS) &bull; Ascom (MDAS) &bull; Jacques (ICS) &bull; Irisity (VCA) &bull; Trane IQ Vision (FMS) &bull; Petronics (FAS) &bull; Axon (BWC) &bull; OTIS (Lift)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JAVASCRIPT (Clock only) ===== -->
+<script>
+(function() {
+  function updateClock() {
+    var now = new Date();
+    var h = String(now.getHours()).padStart(2,'0');
+    var m = String(now.getMinutes()).padStart(2,'0');
+    var s = String(now.getSeconds()).padStart(2,'0');
+    var el = document.getElementById('clockDisplay');
+    if (el) el.textContent = h + ':' + m + ':' + s;
+    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var del = document.getElementById('dateDisplay');
+    if (del) del.textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+})();
+</script>
+</body>
+</html>
