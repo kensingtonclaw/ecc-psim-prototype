@@ -304,7 +304,7 @@ body {
 #filter-duress:not(:checked) ~ .main-content > #s1-panel .device-marker.duress { display: none; }
 
 /* Floor selector switching */
-.floor-plan-l1, .floor-plan-l2 { display: none; border: 3px solid rgba(255,255,255,0.6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); overflow: hidden; }
+.floor-plan-l1, .floor-plan-l2 { display: none; position: relative; border: 3px solid rgba(255,255,255,0.6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); overflow: hidden; height: auto; min-height: 0; }
 #floor-1:checked ~ .main-content > #s1-panel .floor-plan-l1 { display: block; }
 #floor-2:checked ~ .main-content > #s1-panel .floor-plan-l2 { display: block; }
 .floor-selector { display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; min-width: 180px; flex-shrink: 0; }
@@ -681,7 +681,7 @@ textarea.form-control { resize: vertical; min-height: 60px; }
   border-radius: 6px;
   position: relative;
   overflow: hidden;
-  min-height: 300px;
+  min-height: 0;
 }
 .map-controls {
   position: absolute;
@@ -1260,34 +1260,34 @@ label { cursor: pointer; }
         </div>
 
         <!-- ===== LEVEL 1 FLOOR PLAN ===== -->
-        <div class="floor-plan-l1" style="position:absolute;top:0;left:0;width:100%;height:100%;">
-          <img src="https://www.lyonsarch.com.au/wp-content/uploads/2020/05/LCCH_AA_PlanL7-e1589261361968.png" alt="Level 1 Floor Plan" style="width:100%;height:auto;border-radius:6px;"/>
+        <div class="floor-plan-l1">
+          <img src="https://www.lyonsarch.com.au/wp-content/uploads/2020/05/LCCH_AA_PlanL7-e1589261361968.png" alt="Level 1 Floor Plan" style="width:100%;display:block;border-radius:6px;"/>
           <!-- Level 1 Device Markers -->
-          <div class="device-marker camera" style="left:8%;top:18%;" title="CAM-0101 ED Triage">C</div>
+          <div class="device-marker camera" style="left:12%;top:18%;" title="CAM-0101 ED Triage">C</div>
           <div class="device-marker camera" style="left:14%;top:38%;" title="CAM-0102 ED Resus">C</div>
-          <div class="device-marker camera" style="left:4%;top:44%;" title="CAM-0103 ED Entry">C</div>
+          <div class="device-marker camera" style="left:12%;top:44%;" title="CAM-0103 ED Entry">C</div>
           <div class="device-marker camera" style="left:38%;top:12%;" title="CAM-0110 Theatre Corridor">C</div>
           <div class="device-marker camera" style="left:15%;top:62%;" title="CAM-0120 Main Entry">C</div>
-          <div class="device-marker camera" style="left:12%;top:85%;" title="CAM-0155 Loading Dock">C</div>
+          <div class="device-marker camera" style="left:12%;top:78%;" title="CAM-0155 Loading Dock">C</div>
           <div class="device-marker camera" style="left:52%;top:62%;" title="CAM-0130 Pharmacy">C</div>
           <div class="device-marker camera" style="left:86%;top:72%;" title="CAM-0142 Car Park B">C</div>
           <div class="device-marker door" style="left:15%;top:73%;" title="Door-ME-01 Main Entry">D</div>
-          <div class="device-marker door" style="left:6%;top:43%;" title="Door-ED-01 ED Entry">D</div>
+          <div class="device-marker door" style="left:10%;top:43%;" title="Door-ED-01 ED Entry">D</div>
           <div class="device-marker door alarm-active" style="left:36%;top:30%;" title="Door-TH-03 Theatre 3 FORCED OPEN">D</div>
           <div class="device-marker door" style="left:36%;top:14%;" title="Door-TH-01 Theatre 1">D</div>
-          <div class="device-marker door" style="left:5%;top:88%;" title="Door-LD-01 Loading Dock Bay">D</div>
-          <div class="device-marker fire" style="left:52%;top:85%;" title="Fire Zone 8 Kitchen">F</div>
-          <div class="device-marker fire alarm-active" style="left:54%;top:87%;" title="FIRE ALARM Kitchen ACTIVE">F</div>
+          <div class="device-marker door" style="left:10%;top:80%;" title="Door-LD-01 Loading Dock Bay">D</div>
+          <div class="device-marker fire" style="left:52%;top:76%;" title="Fire Zone 8 Kitchen">F</div>
+          <div class="device-marker fire alarm-active" style="left:54%;top:78%;" title="FIRE ALARM Kitchen ACTIVE">F</div>
           <div class="device-marker duress alarm-active" style="left:10%;top:20%;" title="Fixed Duress ED Triage">!</div>
           <div class="device-marker intercom" style="left:15%;top:75%;" title="ICS-Main Entry">I</div>
-          <div class="device-marker intercom" style="left:10%;top:92%;" title="ICS-Loading Dock">I</div>
+          <div class="device-marker intercom" style="left:10%;top:82%;" title="ICS-Loading Dock">I</div>
           <div class="device-marker iaz" style="left:52%;top:58%;" title="IAZ-Pharmacy">Z</div>
           <div class="device-marker iaz alarm-active" style="left:54%;top:60%;" title="IAZ Pharmacy ALARM">Z</div>
         </div>
 
         <!-- ===== LEVEL 2 FLOOR PLAN ===== -->
-        <div class="floor-plan-l2" style="position:absolute;top:0;left:0;width:100%;height:100%;">
-          <img src="https://static.dezeen.com/uploads/2014/12/Lady-Cilento-Childrens-Hospital-by-Lyons_dezeen_2_1000.gif" alt="Level 2 Floor Plan" style="width:100%;height:auto;border-radius:6px;"/>
+        <div class="floor-plan-l2">
+          <img src="https://static.dezeen.com/uploads/2014/12/Lady-Cilento-Childrens-Hospital-by-Lyons_dezeen_2_1000.gif" alt="Level 2 Floor Plan" style="width:100%;display:block;border-radius:6px;"/>
           <!-- Level 2 Device Markers -->
           <div class="device-marker camera" style="left:10%;top:20%;" title="CAM-0201 Ward 2A Entry">C</div>
           <div class="device-marker camera" style="left:30%;top:12%;" title="CAM-0202 Ward 2A Corridor">C</div>
@@ -1295,12 +1295,12 @@ label { cursor: pointer; }
           <div class="device-marker camera" style="left:65%;top:12%;" title="CAM-0215 Meds Room">C</div>
           <div class="device-marker camera" style="left:18%;top:62%;" title="CAM-0220 Pathology Entrance">C</div>
           <div class="device-marker camera" style="left:85%;top:72%;" title="CAM-0230 Plant Room">C</div>
-          <div class="device-marker door" style="left:8%;top:44%;" title="Door-W2A-01 Ward 2A">D</div>
+          <div class="device-marker door" style="left:12%;top:44%;" title="Door-W2A-01 Ward 2A">D</div>
           <div class="device-marker door" style="left:35%;top:44%;" title="Door-W2B-01 Ward 2B">D</div>
           <div class="device-marker door" style="left:62%;top:16%;" title="Door-MED-01 Meds Room (Locked)">D</div>
           <div class="device-marker door" style="left:10%;top:56%;" title="Door-PATH-01 Pathology Lab">D</div>
           <div class="device-marker fire" style="left:82%;top:56%;" title="Fire Zone 20 Plant Room">F</div>
-          <div class="device-marker fire" style="left:42%;top:85%;" title="Fire Zone 22 Education">F</div>
+          <div class="device-marker fire" style="left:42%;top:78%;" title="Fire Zone 22 Education">F</div>
           <div class="device-marker duress alarm-active" style="left:12%;top:14%;" title="Mobile Duress Ward 2A Bay 3">!</div>
           <div class="device-marker duress" style="left:48%;top:38%;" title="Fixed Duress Ward 2B Nurse Stn">!</div>
           <div class="device-marker intercom" style="left:35%;top:46%;" title="ICS-Lift Lobby L2">I</div>
