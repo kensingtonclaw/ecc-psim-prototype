@@ -443,22 +443,21 @@ body {
 /* ===== SPLIT PANE (Screen 2) ===== */
 .split-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 1;
   overflow: hidden;
 }
 .split-top {
-  height: 50%;
-  min-height: 200px;
+  width: 55%;
+  min-width: 300px;
   overflow: auto;
-  border-bottom: none;
   display: flex;
   flex-direction: column;
 }
 .split-divider {
-  height: 6px;
-  background: linear-gradient(180deg, var(--border), var(--bg-panel-alt), var(--border));
-  cursor: ns-resize;
+  width: 6px;
+  background: linear-gradient(90deg, var(--border), var(--bg-panel-alt), var(--border));
+  cursor: ew-resize;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -466,8 +465,8 @@ body {
 }
 .split-divider::after {
   content: '';
-  width: 40px;
-  height: 2px;
+  width: 2px;
+  height: 40px;
   background: var(--border-light);
   border-radius: 1px;
 }
@@ -1437,9 +1436,9 @@ label { cursor: pointer; }
         <span style="font-size:10px;color:var(--text-muted);">Auto-refresh: 5s</span>
       </div>
 
-      <div style="display:flex;flex:1;overflow:hidden;">
+      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
         <!-- Critical Alarms -->
-        <div style="flex:1;overflow:auto;border-right:1px solid var(--border);">
+        <div style="flex:1;overflow:auto;border-bottom:1px solid var(--border);">
           <div class="panel-header critical" style="position:sticky;top:0;z-index:2;">&#9888; Critical Alarms <span class="badge critical" style="margin-left:8px;">6</span></div>
           <table class="alarm-table">
             <thead>
