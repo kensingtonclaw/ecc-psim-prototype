@@ -295,6 +295,24 @@ body {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
 
+/* Floor selector switching */
+.floor-plan-l1, .floor-plan-l2 { display: none; }
+#floor-1:checked ~ .main-content > #s1-panel .floor-plan-l1 { display: block; }
+#floor-2:checked ~ .main-content > #s1-panel .floor-plan-l2 { display: block; }
+.floor-selector { display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; min-width: 180px; flex-shrink: 0; }
+.floor-selector-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); padding: 4px 8px 6px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+.floor-label { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--text-secondary); border: 1px solid transparent; transition: all 0.15s; }
+.floor-label:hover { color: var(--text-primary); background: var(--bg-input); }
+.floor-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--text-muted); flex-shrink: 0; }
+#floor-1:checked ~ .main-content > #s1-panel label[for="floor-1"],
+#floor-2:checked ~ .main-content > #s1-panel label[for="floor-2"] {
+  background: rgba(59,130,246,0.12); color: var(--accent); border-color: var(--accent);
+}
+#floor-1:checked ~ .main-content > #s1-panel label[for="floor-1"] .floor-dot,
+#floor-2:checked ~ .main-content > #s1-panel label[for="floor-2"] .floor-dot {
+  background: var(--accent); border-color: var(--accent);
+}
+
 /* ===== SUB-TABS ===== */
 .sub-tabs {
   display: flex;
@@ -1130,6 +1148,10 @@ label { cursor: pointer; }
 <input type="checkbox" id="alarm-popup-toggle" hidden>
 <input type="checkbox" id="info-panel-toggle" hidden>
 
+<!-- Floor selector radios -->
+<input type="radio" name="floor-sel" id="floor-1" checked hidden>
+<input type="radio" name="floor-sel" id="floor-2" hidden>
+
 <!-- Filter toggles for map -->
 <input type="checkbox" id="filter-cctv" checked hidden>
 <input type="checkbox" id="filter-eacs" checked hidden>
@@ -1205,73 +1227,331 @@ label { cursor: pointer; }
 
   <!-- Tab 0: Floor Plan -->
   <div class="sub-content" id="s1-content-0">
-    <div class="map-container" style="flex:1;">
-      <div class="map-controls">
-        <div class="map-btn" title="Zoom In">+</div>
-        <div class="map-btn" title="Zoom Out">&minus;</div>
-        <div class="map-btn" title="Fit View">&#8634;</div>
-      </div>
-      <div class="map-filters">
-        <label for="filter-cctv" class="filter-chip">CCTV</label>
-        <label for="filter-eacs" class="filter-chip">EACS</label>
-        <label for="filter-ics" class="filter-chip">ICS</label>
-        <label for="filter-iaz" class="filter-chip">IAZ</label>
-        <label for="filter-fas" class="filter-chip">FAS</label>
-        <label for="filter-duress" class="filter-chip">Duress</label>
+    <div style="display:flex;gap:8px;flex:1;min-height:0;">
+      <!-- Floor Selector Panel -->
+      <div class="floor-selector">
+        <div class="floor-selector-title">Floor / Level</div>
+        <label for="floor-1" class="floor-label"><span class="floor-dot"></span>Level 1 &mdash; Emergency &amp; Theatre</label>
+        <label for="floor-2" class="floor-label"><span class="floor-dot"></span>Level 2 &mdash; Wards &amp; Pathology</label>
       </div>
 
-      <!-- SVG Floor Plan -->
-      <svg viewBox="0 0 900 500" style="width:100%;height:100%;position:absolute;top:0;left:0;">
-        <!-- Building Outline -->
-        <rect x="50" y="40" width="800" height="420" rx="4" fill="none" stroke="#2d3240" stroke-width="2"/>
-        <!-- Wings -->
-        <line x1="450" y1="40" x2="450" y2="460" stroke="#2d3240" stroke-width="1.5"/>
-        <line x1="50" y1="230" x2="850" y2="230" stroke="#2d3240" stroke-width="1.5"/>
-        <!-- Rooms -->
-        <rect x="60" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="150" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Emergency Dept</text>
-        <rect x="260" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="350" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Theatre 1-4</text>
-        <rect x="460" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="550" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Ward 4A/4B</text>
-        <rect x="660" y="50" width="180" height="80" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="750" y="95" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Pharmacy</text>
-        <rect x="60" y="150" width="180" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="150" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Main Entry</text>
-        <rect x="260" y="150" width="180" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="350" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Admin/Reception</text>
-        <rect x="460" y="150" width="380" height="70" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="650" y="190" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Car Park B</text>
-        <rect x="60" y="245" width="380" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="250" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Loading Dock / Stanley St</text>
-        <rect x="460" y="245" width="180" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="550" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Kitchen</text>
-        <rect x="660" y="245" width="180" height="90" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="750" y="295" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Pathology Lab</text>
-        <rect x="60" y="355" width="380" height="95" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="250" y="408" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Helipad / Plant</text>
-        <rect x="460" y="355" width="380" height="95" rx="2" fill="rgba(59,130,246,0.04)" stroke="#2d3240" stroke-width="1"/>
-        <text x="650" y="408" text-anchor="middle" fill="#5a6170" font-size="11" font-family="Segoe UI,system-ui">Safe Room / Staff Areas</text>
-      </svg>
+      <!-- Map Area -->
+      <div class="map-container" style="flex:1;">
+        <div class="map-controls">
+          <div class="map-btn" title="Zoom In">+</div>
+          <div class="map-btn" title="Zoom Out">&minus;</div>
+          <div class="map-btn" title="Fit View">&#8634;</div>
+        </div>
+        <div class="map-filters">
+          <label for="filter-cctv" class="filter-chip">CCTV</label>
+          <label for="filter-eacs" class="filter-chip">EACS</label>
+          <label for="filter-ics" class="filter-chip">ICS</label>
+          <label for="filter-iaz" class="filter-chip">IAZ</label>
+          <label for="filter-fas" class="filter-chip">FAS</label>
+          <label for="filter-duress" class="filter-chip">Duress</label>
+        </div>
 
-      <!-- Device Markers -->
-      <div class="device-marker camera" style="left:12%;top:15%;" title="CAM-0101 ED Entry">C</div>
-      <div class="device-marker camera" style="left:28%;top:18%;" title="CAM-0115 Theatre Corridor">C</div>
-      <div class="device-marker camera" style="left:55%;top:15%;" title="CAM-0132 Ward 4B">C</div>
-      <div class="device-marker camera" style="left:72%;top:37%;" title="CAM-0142 Car Park B">C</div>
-      <div class="device-marker camera" style="left:40%;top:55%;" title="CAM-0155 Loading Dock">C</div>
-      <div class="device-marker camera" style="left:82%;top:15%;" title="CAM-0160 Pharmacy">C</div>
-      <div class="device-marker door" style="left:18%;top:30%;" title="Door-ED-01 Main ED Entry">D</div>
-      <div class="device-marker door" style="left:38%;top:30%;" title="Door-TH-03 Theatre 3">D</div>
-      <div class="device-marker door alarm-active" style="left:38%;top:33%;" title="Door-TH-03 FORCED OPEN">D</div>
-      <div class="device-marker fire" style="left:58%;top:55%;" title="Fire Zone 12 Kitchen">F</div>
-      <div class="device-marker fire alarm-active" style="left:59%;top:57%;" title="FIRE ALARM ACTIVE">F</div>
-      <div class="device-marker duress alarm-active" style="left:15%;top:16%;" title="Fixed Duress - Level 2 ED">!</div>
-      <div class="device-marker duress alarm-active" style="left:57%;top:14%;" title="Mobile Duress - Ward 4B">!</div>
-      <div class="device-marker intercom" style="left:17%;top:36%;" title="ICS-Main Entry">I</div>
-      <div class="device-marker intercom" style="left:30%;top:58%;" title="ICS-Loading Dock">I</div>
-      <div class="device-marker iaz" style="left:80%;top:17%;" title="IAZ-Pharmacy">Z</div>
-      <div class="device-marker iaz alarm-active" style="left:81%;top:19%;" title="IAZ Pharmacy ALARM">Z</div>
+        <!-- ===== LEVEL 1 FLOOR PLAN ===== -->
+        <div class="floor-plan-l1" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+          <svg viewBox="0 0 960 520" style="width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <style>
+                .wall { fill: none; stroke: #3a4560; stroke-width: 2; }
+                .wall-thin { fill: none; stroke: #2e3a50; stroke-width: 1; }
+                .room-fill { fill: rgba(30,42,70,0.35); }
+                .corridor-fill { fill: rgba(20,30,50,0.2); }
+                .label { fill: #6b7a96; font-size: 10px; font-family: 'Segoe UI',system-ui,sans-serif; text-anchor: middle; }
+                .label-sm { fill: #556178; font-size: 8px; font-family: 'Segoe UI',system-ui,sans-serif; text-anchor: middle; }
+                .floor-title { fill: #4a9eff; font-size: 11px; font-family: 'Segoe UI',system-ui,sans-serif; font-weight: 700; letter-spacing: 1px; }
+              </style>
+            </defs>
+            <!-- Floor title -->
+            <text x="480" y="20" text-anchor="middle" class="floor-title">LEVEL 1 &mdash; EMERGENCY &amp; THEATRE</text>
+            <!-- Building outline -->
+            <rect x="40" y="32" width="880" height="470" rx="3" class="wall" stroke-width="2.5"/>
+            <!-- Main horizontal corridor -->
+            <rect x="40" y="220" width="880" height="50" class="corridor-fill"/>
+            <line x1="40" y1="220" x2="920" y2="220" class="wall-thin"/>
+            <line x1="40" y1="270" x2="920" y2="270" class="wall-thin"/>
+            <text x="480" y="250" class="label-sm" fill="#4a5568">MAIN CORRIDOR</text>
+            <!-- ED Entrance vestibule -->
+            <rect x="40" y="200" width="60" height="70" class="room-fill"/>
+            <rect x="40" y="200" width="60" height="70" class="wall"/>
+            <text x="70" y="240" class="label-sm">ED</text>
+            <text x="70" y="250" class="label-sm">Entry</text>
+            <!-- ED Triage -->
+            <rect x="50" y="42" width="160" height="80" class="room-fill"/>
+            <rect x="50" y="42" width="160" height="80" class="wall"/>
+            <text x="130" y="78" class="label">ED Triage</text>
+            <text x="130" y="90" class="label-sm">4 bays</text>
+            <!-- ED Resus -->
+            <rect x="50" y="130" width="160" height="82" class="room-fill"/>
+            <rect x="50" y="130" width="160" height="82" class="wall"/>
+            <text x="130" y="170" class="label">ED Resus</text>
+            <text x="130" y="182" class="label-sm">2 bays</text>
+            <!-- ED room dividers -->
+            <line x1="130" y1="42" x2="130" y2="122" class="wall-thin" stroke-dasharray="3,3"/>
+            <line x1="130" y1="130" x2="130" y2="212" class="wall-thin" stroke-dasharray="3,3"/>
+            <!-- ED Consult rooms -->
+            <rect x="220" y="42" width="100" height="55" class="room-fill"/>
+            <rect x="220" y="42" width="100" height="55" class="wall"/>
+            <text x="270" y="74" class="label-sm">Consult 1</text>
+            <rect x="220" y="105" width="100" height="55" class="room-fill"/>
+            <rect x="220" y="105" width="100" height="55" class="wall"/>
+            <text x="270" y="137" class="label-sm">Consult 2</text>
+            <rect x="220" y="168" width="100" height="44" class="room-fill"/>
+            <rect x="220" y="168" width="100" height="44" class="wall"/>
+            <text x="270" y="195" class="label-sm">ED Store</text>
+            <!-- Theatre wing -->
+            <rect x="340" y="42" width="130" height="85" class="room-fill"/>
+            <rect x="340" y="42" width="130" height="85" class="wall"/>
+            <text x="405" y="80" class="label">Theatre 1</text>
+            <rect x="480" y="42" width="130" height="85" class="room-fill"/>
+            <rect x="480" y="42" width="130" height="85" class="wall"/>
+            <text x="545" y="80" class="label">Theatre 2</text>
+            <rect x="340" y="135" width="130" height="77" class="room-fill"/>
+            <rect x="340" y="135" width="130" height="77" class="wall"/>
+            <text x="405" y="178" class="label">Theatre 3</text>
+            <rect x="480" y="135" width="130" height="77" class="room-fill"/>
+            <rect x="480" y="135" width="130" height="77" class="wall"/>
+            <text x="545" y="178" class="label">Theatre 4</text>
+            <!-- Theatre corridor -->
+            <rect x="330" y="42" width="10" height="170" class="corridor-fill"/>
+            <line x1="330" y1="42" x2="330" y2="212" class="wall-thin"/>
+            <!-- Anaesthetics / Prep -->
+            <rect x="620" y="42" width="140" height="85" class="room-fill"/>
+            <rect x="620" y="42" width="140" height="85" class="wall"/>
+            <text x="690" y="80" class="label">Anaesthetics</text>
+            <text x="690" y="92" class="label-sm">Prep &amp; Recovery</text>
+            <!-- CSSD -->
+            <rect x="770" y="42" width="140" height="85" class="room-fill"/>
+            <rect x="770" y="42" width="140" height="85" class="wall"/>
+            <text x="840" y="80" class="label">CSSD</text>
+            <!-- Staff area -->
+            <rect x="620" y="135" width="140" height="77" class="room-fill"/>
+            <rect x="620" y="135" width="140" height="77" class="wall"/>
+            <text x="690" y="178" class="label">Staff Room</text>
+            <!-- Plant / Comms -->
+            <rect x="770" y="135" width="140" height="77" class="room-fill"/>
+            <rect x="770" y="135" width="140" height="77" class="wall"/>
+            <text x="840" y="178" class="label">Plant / Comms</text>
+            <!-- Reception / Main Entry (south of corridor) -->
+            <rect x="50" y="278" width="200" height="100" class="room-fill"/>
+            <rect x="50" y="278" width="200" height="100" class="wall"/>
+            <text x="150" y="325" class="label">Main Entry</text>
+            <text x="150" y="337" class="label-sm">Reception &amp; Waiting</text>
+            <!-- Main entry door indicator -->
+            <rect x="120" y="375" width="60" height="12" rx="2" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="1"/>
+            <text x="150" y="384" class="label-sm" fill="#3b82f6">ENTRY</text>
+            <!-- Admin offices -->
+            <rect x="260" y="278" width="150" height="100" class="room-fill"/>
+            <rect x="260" y="278" width="150" height="100" class="wall"/>
+            <text x="335" y="332" class="label">Admin Offices</text>
+            <!-- Loading Dock area -->
+            <rect x="50" y="395" width="200" height="95" class="room-fill"/>
+            <rect x="50" y="395" width="200" height="95" class="wall"/>
+            <text x="150" y="445" class="label">Loading Dock</text>
+            <text x="150" y="457" class="label-sm">Stanley St access</text>
+            <!-- Loading dock bay doors -->
+            <rect x="55" y="445" width="8" height="30" rx="1" fill="rgba(139,92,246,0.3)" stroke="#8b5cf6" stroke-width="1"/>
+            <rect x="55" y="415" width="8" height="25" rx="1" fill="rgba(139,92,246,0.3)" stroke="#8b5cf6" stroke-width="1"/>
+            <!-- Pharmacy -->
+            <rect x="420" y="278" width="160" height="100" class="room-fill"/>
+            <rect x="420" y="278" width="160" height="100" class="wall"/>
+            <text x="500" y="332" class="label">Pharmacy</text>
+            <!-- Kitchen -->
+            <rect x="420" y="395" width="160" height="95" class="room-fill"/>
+            <rect x="420" y="395" width="160" height="95" class="wall"/>
+            <text x="500" y="445" class="label">Kitchen</text>
+            <!-- Safe Room -->
+            <rect x="590" y="278" width="150" height="100" class="room-fill"/>
+            <rect x="590" y="278" width="150" height="100" class="wall"/>
+            <text x="665" y="325" class="label">Safe Room</text>
+            <text x="665" y="337" class="label-sm">Secure area</text>
+            <!-- Plant / Helipad -->
+            <rect x="590" y="395" width="150" height="95" class="room-fill"/>
+            <rect x="590" y="395" width="150" height="95" class="wall"/>
+            <text x="665" y="445" class="label">Helipad Access</text>
+            <!-- Car Park corridor -->
+            <rect x="750" y="278" width="160" height="212" class="room-fill"/>
+            <rect x="750" y="278" width="160" height="212" class="wall"/>
+            <text x="830" y="380" class="label">Car Park B</text>
+            <text x="830" y="392" class="label-sm">Covered</text>
+            <!-- Stairwell indicators -->
+            <rect x="315" y="225" width="30" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="330" y="249" class="label-sm">S1</text>
+            <rect x="615" y="225" width="30" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="630" y="249" class="label-sm">S2</text>
+            <!-- Lift lobby -->
+            <rect x="465" y="225" width="50" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="490" y="249" class="label-sm">Lift</text>
+          </svg>
+          <!-- Level 1 Device Markers -->
+          <div class="device-marker camera" style="left:8%;top:18%;" title="CAM-0101 ED Triage">C</div>
+          <div class="device-marker camera" style="left:14%;top:38%;" title="CAM-0102 ED Resus">C</div>
+          <div class="device-marker camera" style="left:4%;top:44%;" title="CAM-0103 ED Entry">C</div>
+          <div class="device-marker camera" style="left:38%;top:12%;" title="CAM-0110 Theatre Corridor">C</div>
+          <div class="device-marker camera" style="left:15%;top:62%;" title="CAM-0120 Main Entry">C</div>
+          <div class="device-marker camera" style="left:12%;top:85%;" title="CAM-0155 Loading Dock">C</div>
+          <div class="device-marker camera" style="left:52%;top:62%;" title="CAM-0130 Pharmacy">C</div>
+          <div class="device-marker camera" style="left:86%;top:72%;" title="CAM-0142 Car Park B">C</div>
+          <div class="device-marker door" style="left:15%;top:73%;" title="Door-ME-01 Main Entry">D</div>
+          <div class="device-marker door" style="left:6%;top:43%;" title="Door-ED-01 ED Entry">D</div>
+          <div class="device-marker door alarm-active" style="left:36%;top:30%;" title="Door-TH-03 Theatre 3 FORCED OPEN">D</div>
+          <div class="device-marker door" style="left:36%;top:14%;" title="Door-TH-01 Theatre 1">D</div>
+          <div class="device-marker door" style="left:5%;top:88%;" title="Door-LD-01 Loading Dock Bay">D</div>
+          <div class="device-marker fire" style="left:52%;top:85%;" title="Fire Zone 8 Kitchen">F</div>
+          <div class="device-marker fire alarm-active" style="left:54%;top:87%;" title="FIRE ALARM Kitchen ACTIVE">F</div>
+          <div class="device-marker duress alarm-active" style="left:10%;top:20%;" title="Fixed Duress ED Triage">!</div>
+          <div class="device-marker intercom" style="left:15%;top:75%;" title="ICS-Main Entry">I</div>
+          <div class="device-marker intercom" style="left:10%;top:92%;" title="ICS-Loading Dock">I</div>
+          <div class="device-marker iaz" style="left:52%;top:58%;" title="IAZ-Pharmacy">Z</div>
+          <div class="device-marker iaz alarm-active" style="left:54%;top:60%;" title="IAZ Pharmacy ALARM">Z</div>
+        </div>
+
+        <!-- ===== LEVEL 2 FLOOR PLAN ===== -->
+        <div class="floor-plan-l2" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+          <svg viewBox="0 0 960 520" style="width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <style>
+                .wall { fill: none; stroke: #3a4560; stroke-width: 2; }
+                .wall-thin { fill: none; stroke: #2e3a50; stroke-width: 1; }
+                .room-fill { fill: rgba(30,42,70,0.35); }
+                .corridor-fill { fill: rgba(20,30,50,0.2); }
+                .label { fill: #6b7a96; font-size: 10px; font-family: 'Segoe UI',system-ui,sans-serif; text-anchor: middle; }
+                .label-sm { fill: #556178; font-size: 8px; font-family: 'Segoe UI',system-ui,sans-serif; text-anchor: middle; }
+                .floor-title { fill: #4a9eff; font-size: 11px; font-family: 'Segoe UI',system-ui,sans-serif; font-weight: 700; letter-spacing: 1px; }
+              </style>
+            </defs>
+            <!-- Floor title -->
+            <text x="480" y="20" text-anchor="middle" class="floor-title">LEVEL 2 &mdash; WARDS &amp; PATHOLOGY</text>
+            <!-- Building outline -->
+            <rect x="40" y="32" width="880" height="470" rx="3" class="wall" stroke-width="2.5"/>
+            <!-- Main horizontal corridor -->
+            <rect x="40" y="220" width="880" height="50" class="corridor-fill"/>
+            <line x1="40" y1="220" x2="920" y2="220" class="wall-thin"/>
+            <line x1="40" y1="270" x2="920" y2="270" class="wall-thin"/>
+            <text x="480" y="250" class="label-sm" fill="#4a5568">MAIN CORRIDOR</text>
+            <!-- Ward 2A — north wing left -->
+            <rect x="50" y="42" width="260" height="170" class="room-fill"/>
+            <rect x="50" y="42" width="260" height="170" class="wall"/>
+            <text x="180" y="110" class="label">Ward 2A</text>
+            <text x="180" y="123" class="label-sm">12 beds</text>
+            <!-- Ward 2A bed bay dividers -->
+            <line x1="115" y1="42" x2="115" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="180" y1="42" x2="180" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="245" y1="42" x2="245" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="50" y1="127" x2="310" y2="127" class="wall-thin" stroke-dasharray="4,4"/>
+            <!-- Ward 2A nurse station -->
+            <rect x="105" y="170" width="80" height="35" rx="2" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-width="1"/>
+            <text x="145" y="192" class="label-sm" fill="#06b6d4">Nurse Stn</text>
+            <!-- Ward 2B — north wing right -->
+            <rect x="320" y="42" width="260" height="170" class="room-fill"/>
+            <rect x="320" y="42" width="260" height="170" class="wall"/>
+            <text x="450" y="110" class="label">Ward 2B</text>
+            <text x="450" y="123" class="label-sm">10 beds</text>
+            <!-- Ward 2B bed bay dividers -->
+            <line x1="385" y1="42" x2="385" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="450" y1="42" x2="450" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="515" y1="42" x2="515" y2="212" class="wall-thin" stroke-dasharray="4,4"/>
+            <line x1="320" y1="127" x2="580" y2="127" class="wall-thin" stroke-dasharray="4,4"/>
+            <!-- Ward 2B nurse station -->
+            <rect x="410" y="170" width="80" height="35" rx="2" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-width="1"/>
+            <text x="450" y="192" class="label-sm" fill="#06b6d4">Nurse Stn</text>
+            <!-- Medication room -->
+            <rect x="590" y="42" width="100" height="80" class="room-fill"/>
+            <rect x="590" y="42" width="100" height="80" class="wall"/>
+            <text x="640" y="80" class="label">Meds</text>
+            <text x="640" y="92" class="label-sm">Room</text>
+            <!-- Utility / Dirty utility -->
+            <rect x="700" y="42" width="100" height="80" class="room-fill"/>
+            <rect x="700" y="42" width="100" height="80" class="wall"/>
+            <text x="750" y="85" class="label-sm">Dirty Utility</text>
+            <!-- Clean utility -->
+            <rect x="810" y="42" width="100" height="80" class="room-fill"/>
+            <rect x="810" y="42" width="100" height="80" class="wall"/>
+            <text x="860" y="85" class="label-sm">Clean Utility</text>
+            <!-- Office / Ward clerk -->
+            <rect x="590" y="130" width="100" height="82" class="room-fill"/>
+            <rect x="590" y="130" width="100" height="82" class="wall"/>
+            <text x="640" y="175" class="label-sm">Ward Clerk</text>
+            <!-- Meeting / Family room -->
+            <rect x="700" y="130" width="100" height="82" class="room-fill"/>
+            <rect x="700" y="130" width="100" height="82" class="wall"/>
+            <text x="750" y="175" class="label-sm">Family Room</text>
+            <!-- On-call room -->
+            <rect x="810" y="130" width="100" height="82" class="room-fill"/>
+            <rect x="810" y="130" width="100" height="82" class="wall"/>
+            <text x="860" y="175" class="label-sm">On-Call</text>
+            <!-- Pathology Lab — south wing -->
+            <rect x="50" y="278" width="320" height="212" class="room-fill"/>
+            <rect x="50" y="278" width="320" height="212" class="wall"/>
+            <text x="210" y="375" class="label">Pathology Laboratory</text>
+            <text x="210" y="390" class="label-sm">Haematology &amp; Biochemistry</text>
+            <!-- Lab bench dividers -->
+            <line x1="170" y1="300" x2="170" y2="468" class="wall-thin" stroke-dasharray="5,5"/>
+            <line x1="290" y1="300" x2="290" y2="468" class="wall-thin" stroke-dasharray="5,5"/>
+            <line x1="70" y1="380" x2="350" y2="380" class="wall-thin" stroke-dasharray="5,5"/>
+            <!-- Specimen reception -->
+            <rect x="100" y="280" width="100" height="30" rx="2" fill="rgba(20,184,166,0.12)" stroke="#14b8a6" stroke-width="1"/>
+            <text x="150" y="299" class="label-sm" fill="#14b8a6">Specimen Rec.</text>
+            <!-- Staff / Break area -->
+            <rect x="380" y="278" width="140" height="100" class="room-fill"/>
+            <rect x="380" y="278" width="140" height="100" class="wall"/>
+            <text x="450" y="332" class="label">Staff Break</text>
+            <!-- Seminar / Education -->
+            <rect x="380" y="386" width="140" height="104" class="room-fill"/>
+            <rect x="380" y="386" width="140" height="104" class="wall"/>
+            <text x="450" y="442" class="label">Education</text>
+            <text x="450" y="454" class="label-sm">Seminar Room</text>
+            <!-- IT / Server room -->
+            <rect x="530" y="278" width="120" height="100" class="room-fill"/>
+            <rect x="530" y="278" width="120" height="100" class="wall"/>
+            <text x="590" y="332" class="label">IT / Server</text>
+            <!-- Stores -->
+            <rect x="530" y="386" width="120" height="104" class="room-fill"/>
+            <rect x="530" y="386" width="120" height="104" class="wall"/>
+            <text x="590" y="442" class="label">Stores</text>
+            <!-- Bathroom / amenities block -->
+            <rect x="660" y="278" width="100" height="212" class="room-fill"/>
+            <rect x="660" y="278" width="100" height="212" class="wall"/>
+            <text x="710" y="380" class="label-sm">Bathrooms</text>
+            <text x="710" y="392" class="label-sm">&amp; Amenities</text>
+            <!-- Plant / Roof access -->
+            <rect x="770" y="278" width="140" height="212" class="room-fill"/>
+            <rect x="770" y="278" width="140" height="212" class="wall"/>
+            <text x="840" y="380" class="label">Plant Room</text>
+            <text x="840" y="392" class="label-sm">Roof access</text>
+            <!-- Stairwell indicators -->
+            <rect x="315" y="225" width="30" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="330" y="249" class="label-sm">S1</text>
+            <rect x="615" y="225" width="30" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="630" y="249" class="label-sm">S2</text>
+            <!-- Lift lobby -->
+            <rect x="465" y="225" width="50" height="40" rx="2" fill="rgba(100,120,160,0.15)" stroke="#4a5568" stroke-width="1"/>
+            <text x="490" y="249" class="label-sm">Lift</text>
+          </svg>
+          <!-- Level 2 Device Markers -->
+          <div class="device-marker camera" style="left:10%;top:20%;" title="CAM-0201 Ward 2A Entry">C</div>
+          <div class="device-marker camera" style="left:30%;top:12%;" title="CAM-0202 Ward 2A Corridor">C</div>
+          <div class="device-marker camera" style="left:47%;top:20%;" title="CAM-0210 Ward 2B Entry">C</div>
+          <div class="device-marker camera" style="left:65%;top:12%;" title="CAM-0215 Meds Room">C</div>
+          <div class="device-marker camera" style="left:18%;top:62%;" title="CAM-0220 Pathology Entrance">C</div>
+          <div class="device-marker camera" style="left:85%;top:72%;" title="CAM-0230 Plant Room">C</div>
+          <div class="device-marker door" style="left:8%;top:44%;" title="Door-W2A-01 Ward 2A">D</div>
+          <div class="device-marker door" style="left:35%;top:44%;" title="Door-W2B-01 Ward 2B">D</div>
+          <div class="device-marker door" style="left:62%;top:16%;" title="Door-MED-01 Meds Room (Locked)">D</div>
+          <div class="device-marker door" style="left:10%;top:56%;" title="Door-PATH-01 Pathology Lab">D</div>
+          <div class="device-marker fire" style="left:82%;top:56%;" title="Fire Zone 20 Plant Room">F</div>
+          <div class="device-marker fire" style="left:42%;top:85%;" title="Fire Zone 22 Education">F</div>
+          <div class="device-marker duress alarm-active" style="left:12%;top:14%;" title="Mobile Duress Ward 2A Bay 3">!</div>
+          <div class="device-marker duress" style="left:48%;top:38%;" title="Fixed Duress Ward 2B Nurse Stn">!</div>
+          <div class="device-marker intercom" style="left:35%;top:46%;" title="ICS-Lift Lobby L2">I</div>
+          <div class="device-marker intercom" style="left:70%;top:56%;" title="ICS-IT Server Room">I</div>
+          <div class="device-marker iaz" style="left:62%;top:14%;" title="IAZ-Meds Room">Z</div>
+        </div>
+
+      </div>
     </div>
   </div>
 
