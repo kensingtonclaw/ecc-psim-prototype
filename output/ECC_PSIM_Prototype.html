@@ -304,7 +304,7 @@ body {
 #filter-duress:not(:checked) ~ .main-content > #s1-panel .device-marker.duress { display: none; }
 
 /* Floor selector switching */
-.floor-plan-l1, .floor-plan-l2 { display: none; }
+.floor-plan-l1, .floor-plan-l2 { display: none; border: 2px solid rgba(255,255,255,0.15); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); overflow: hidden; }
 #floor-1:checked ~ .main-content > #s1-panel .floor-plan-l1 { display: block; }
 #floor-2:checked ~ .main-content > #s1-panel .floor-plan-l2 { display: block; }
 .floor-selector { display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; min-width: 180px; flex-shrink: 0; }
